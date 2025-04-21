@@ -1,0 +1,15 @@
+.dashboard-container {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+}
+
+.dashboard-content {
+  min-height: calc(100vh - 130px);
+  padding-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content {
+    min-height: calc(100vh - 180px);
+  }
+} 

@@ -1,47 +1,35 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import "../CSS/Homepage.css";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import BenefitsList from "../components/BenefitsList";
 
 function Homepage() {
   const navigate = useNavigate();
-  
-  const handleLoginClick = () => {
-    console.log("Login button clicked, navigating to /login");
-    navigate("/login");
-  };
   
   const handleSignUpClick = () => {
     console.log("Sign up button clicked, navigating to /signin");
     navigate("/signin");
   };
-  
-  const handleLogoClick = () => {
-    console.log("Logo clicked, navigating to /");
-    navigate("/");
-  };
+
+  const storageFeatures = [
+    "Veri Depolama - Güvenli ve hızlı bulut depolama hizmetleriyle verilerinize her an, her yerden erişim sağlayın.",
+    "Güvenlik - En son teknolojilerle korunan verileriniz, güçlü şifreleme sistemlerimizle her zaman güvende.",
+    "Hız - Yüksek performanslı sunucularımız sayesinde verilerinize hızlı erişim ve kesintisiz hizmet."
+  ];
+
+  const storageCategories = [
+    "Fotoğraflar - Özel anlarınızı tarih, konum ve yüz tanıma özellikleriyle düzenleyin, albümler oluşturun.",
+    "Videolar - Yüksek kalitede video dosyalarınızı saklayın, anında paylaşın ve çevrimiçi izleyin.",
+    "Dökümanlar - İş veya eğitim dosyalarınızı düzenleyin, taramalar yapın ve içeriğe göre sınıflandırın.",
+    "Müzik - Müzik koleksiyonunuzu sanatçı, albüm veya tür bazında düzenleyin ve her yerden erişin."
+  ];
 
   return (
     <div className="home-container">
       <header className="header">
-        <nav className="navbar">
-          <div className="logo" onClick={handleLogoClick} role="button" tabIndex={0}>Cloud Ease</div>
-          <div className="auth-buttons">
-            <button 
-              className="login-btn" 
-              onClick={handleLoginClick}
-              type="button"
-            >
-              Giriş Yap
-            </button>
-            <button 
-              className="register-btn" 
-              onClick={handleSignUpClick}
-              type="button"
-            >
-              Kayıt Ol
-            </button>
-          </div>
-        </nav>
+        <Navbar />
         <div className="hero">
           <h1>Bulut Çözümlerinde Yeni Nesil Platform</h1>
           <p>Cloud Ease ile verilerinizi güvenle saklayın, işlerinizi kolayca yönetin ve bulut bilişimin tüm avantajlarından yararlanın.</p>
@@ -118,52 +106,7 @@ function Homepage() {
           </div>
         </div>
       </main>
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="footer-info">
-            <h4>Cloud Ease</h4>
-            <p>Bulut bilişim dünyasında güvenilir çözüm ortağınız. Kurumsal ve bireysel ihtiyaçlarınız için modern bulut hizmetleri.</p>
-            <div className="social-links">
-              <a href="#" className="social-link">f</a>
-              <a href="#" className="social-link">t</a>
-              <a href="#" className="social-link">in</a>
-              <a href="#" className="social-link">ig</a>
-            </div>
-          </div>
-          <div className="footer-links">
-            <div className="footer-links-column">
-              <h4>Ürünler</h4>
-              <ul>
-                <li><a href="#">Bulut Depolama</a></li>
-                <li><a href="#">Yedekleme</a></li>
-                <li><a href="#">Senkronizasyon</a></li>
-                <li><a href="#">Güvenlik</a></li>
-              </ul>
-            </div>
-            <div className="footer-links-column">
-              <h4>Şirket</h4>
-              <ul>
-                <li><a href="#">Hakkımızda</a></li>
-                <li><a href="#">Kariyer</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">İletişim</a></li>
-              </ul>
-            </div>
-            <div className="footer-links-column">
-              <h4>Destek</h4>
-              <ul>
-                <li><a href="#">Yardım Merkezi</a></li>
-                <li><a href="#">Sık Sorulan Sorular</a></li>
-                <li><a href="#">Gizlilik Politikası</a></li>
-                <li><a href="#">Kullanım Şartları</a></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} Cloud Ease. Tüm hakları saklıdır.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

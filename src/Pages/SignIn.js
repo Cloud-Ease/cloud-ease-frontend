@@ -1,6 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../CSS/SignIn.css";
+import Navbar from "../components/Navbar";
+import FormInput from "../components/FormInput";
+import SocialLoginButtons from "../components/SocialLoginButtons";
+import BenefitsList from "../components/BenefitsList";
+import PasswordStrengthMeter from "../components/PasswordStrengthMeter";
 
 function SignIn() {
   const navigate = useNavigate();
@@ -98,7 +103,7 @@ function SignIn() {
     setTimeout(() => {
       console.log("Registration attempt with:", formData);
       // Demo only: In a real app, you would send this data to your backend
-      navigate("/login");
+      navigate("/dashboard-demo"); // Gerçek uygulamada /dashboard olacak
       setIsLoading(false);
     }, 1500);
   };
@@ -109,14 +114,21 @@ function SignIn() {
     
     // Simulate social signup with timeout
     setTimeout(() => {
-      navigate("/");
+      navigate("/dashboard-demo"); // Gerçek uygulamada /dashboard olacak
     }, 1000);
   };
+
+  const benefitsList = [
+    "Sınırsız dosya depolama",
+    "Akıllı dosya organizasyonu",
+    "Her cihazda senkronizasyon",
+    "Gelişmiş güvenlik özellikleri"
+  ];
 
   return (
     <div className="signin-container">
       <div className="signin-header">
-        <div className="logo" onClick={() => navigate("/")}>Cloud Ease</div>
+        <Navbar showAuthButtons={false} />
         <button 
           className="back-to-home" 
           onClick={() => navigate("/")}
@@ -138,39 +150,31 @@ function SignIn() {
           )}
           
           <form onSubmit={handleSubmit} className="signin-form">
-            <div className="form-group">
-              <label htmlFor="fullName">Ad Soyad</label>
-              <div className="input-with-icon">
-                <i className="fas fa-user"></i>
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                  required
-                  placeholder="Adınızı ve soyadınızı girin"
-                  autoComplete="name"
-                />
-              </div>
-            </div>
+            <FormInput 
+              label="Ad Soyad"
+              type="text"
+              id="fullName"
+              name="fullName"
+              value={formData.fullName}
+              onChange={handleChange}
+              required={true}
+              placeholder="Adınızı ve soyadınızı girin"
+              autoComplete="name"
+              icon="fas fa-user"
+            />
             
-            <div className="form-group">
-              <label htmlFor="email">E-posta Adresi</label>
-              <div className="input-with-icon">
-                <i className="fas fa-envelope"></i>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  placeholder="E-posta adresinizi girin"
-                  autoComplete="email"
-                />
-              </div>
-            </div>
+            <FormInput 
+              label="E-posta Adresi"
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required={true}
+              placeholder="E-posta adresinizi girin"
+              autoComplete="email"
+              icon="fas fa-envelope"
+            />
             
             <div className="form-group">
               <label htmlFor="password">Şifre</label>
@@ -188,45 +192,34 @@ function SignIn() {
                   autoComplete="new-password"
                 />
               </div>
-              <div className="password-strength">
-                <div className="strength-meter">
-                  <div 
-                    className={`strength-progress strength-${passwordStrength.score >= 5 ? 5 : passwordStrength.score}`}
-                    style={{ width: `${(passwordStrength.score / 5) * 100}%` }}
-                  ></div>
-                </div>
-                <div className="strength-text">{passwordStrength.message}</div>
-              </div>
+              <PasswordStrengthMeter 
+                score={passwordStrength.score} 
+                message={passwordStrength.message} 
+              />
               <small className="password-hint">
                 <i className="fas fa-info-circle"></i> En az 8 karakter, büyük-küçük harf, rakam ve özel karakter içermeli
               </small>
             </div>
             
-            <div className="form-group">
-              <label htmlFor="confirmPassword">Şifre Tekrar</label>
-              <div className="input-with-icon">
-                <i className="fas fa-lock"></i>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  required
-                  placeholder="Şifrenizi tekrar girin"
-                  autoComplete="new-password"
-                />
-              </div>
-              {formData.password && formData.confirmPassword && (
-                <div className={`password-match ${formData.password === formData.confirmPassword ? 'match' : 'no-match'}`}>
-                  {formData.password === formData.confirmPassword ? (
-                    <><i className="fas fa-check-circle"></i> Şifreler eşleşiyor</>
-                  ) : (
-                    <><i className="fas fa-times-circle"></i> Şifreler eşleşmiyor</>
-                  )}
-                </div>
-              )}
-            </div>
+            <FormInput 
+              label="Şifre Tekrar"
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required={true}
+              placeholder="Şifrenizi tekrar girin"
+              autoComplete="new-password"
+              icon="fas fa-lock"
+              errorMessage={
+                formData.password && 
+                formData.confirmPassword && 
+                formData.password !== formData.confirmPassword ? 
+                "Şifreler eşleşmiyor" : 
+                ""
+              }
+            />
             
             <div className="form-terms">
               <input 
@@ -259,42 +252,17 @@ function SignIn() {
           
           <div className="signin-divider">veya</div>
           
-          <div className="social-signin">
-            <button 
-              className="social-signin-btn google-btn" 
-              onClick={() => handleSocialSignIn('google')}
-              disabled={isLoading}
-            >
-              <i className="fab fa-google"></i>
-              <span className="social-text">Google ile Kayıt Ol</span>
-            </button>
-            <button 
-              className="social-signin-btn facebook-btn" 
-              onClick={() => handleSocialSignIn('facebook')}
-              disabled={isLoading}
-            >
-              <i className="fab fa-facebook-f"></i>
-              <span className="social-text">Facebook ile Kayıt Ol</span>
-            </button>
-            <button 
-              className="social-signin-btn apple-btn" 
-              onClick={() => handleSocialSignIn('apple')}
-              disabled={isLoading}
-            >
-              <i className="fab fa-apple"></i>
-              <span className="social-text">Apple ile Kayıt Ol</span>
-            </button>
-          </div>
+          <SocialLoginButtons 
+            onSocialLogin={handleSocialSignIn} 
+            isSignUp={true}
+            isLoading={isLoading}
+          />
           
-          <div className="benefits-container">
-            <h4>Kayıt Olun ve Hemen Başlayın</h4>
-            <ul className="benefits-list">
-              <li><i className="fas fa-check-circle"></i> Sınırsız dosya depolama</li>
-              <li><i className="fas fa-check-circle"></i> Akıllı dosya organizasyonu</li>
-              <li><i className="fas fa-check-circle"></i> Her cihazda senkronizasyon</li>
-              <li><i className="fas fa-check-circle"></i> Gelişmiş güvenlik özellikleri</li>
-            </ul>
-          </div>
+          <BenefitsList 
+            title="Kayıt Olun ve Hemen Başlayın" 
+            benefits={benefitsList}
+            className="benefits-container"
+          />
           
           <div className="legal-info">
             Kayıt olarak <a href="#">Kullanım Şartları</a> ve <a href="#">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.
