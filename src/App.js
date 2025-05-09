@@ -22,10 +22,11 @@ import Homepage from "./Pages/Homepage";
 import Login from "./Pages/Login";
 import SignIn from "./Pages/SignIn";
 import Dashboard from "./Pages/Dashboard";
+import Profile from "./Pages/Profile";
 
 function App() {
-  // Basit bir auth kontrolü
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Geçici olarak true yapıyoruz
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   // Korumalı route bileşeni
   const ProtectedRoute = ({ children }) => {
@@ -47,6 +48,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             } 
           />
