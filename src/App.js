@@ -18,14 +18,17 @@ import './CSS/App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // Pages
-import Homepage from './Pages/Homepage';
-import Login from './Pages/Login';
-import SignIn from './Pages/SignIn';
-import Dashboard from './Pages/Dashboard';
+
+import Homepage from "./Pages/Homepage";
+import Login from "./Pages/Login";
+import SignIn from "./Pages/SignIn";
+import Dashboard from "./Pages/Dashboard";
+import Profile from "./Pages/Profile";
+
 
 function App() {
-  // Basit bir auth kontrolü
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Geçici olarak true yapıyoruz
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
   // Korumalı route bileşeni
   const ProtectedRoute = ({ children }) => {
@@ -49,6 +52,14 @@ function App() {
                 <Dashboard />
               </ProtectedRoute>
             }
+          />
+          <Route 
+            path="/profile" 
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            } 
           />
           {/* Dashboard demosu için temporary route */}
           <Route path="/dashboard-demo" element={<Dashboard />} />

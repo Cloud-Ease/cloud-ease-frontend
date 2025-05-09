@@ -233,15 +233,9 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
             {showUserDropdown && (
               <div className="user-dropdown">
                 <ul>
-                  <li>
-                    <a href="#profile">Profil</a>
-                  </li>
-                  <li>
-                    <a href="#settings">Ayarlar</a>
-                  </li>
-                  <li>
-                    <button onClick={handleLogout}>Çıkış</button>
-                  </li>
+                  <li><a onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>Profil</a></li>
+                  <li><a href="#settings">Ayarlar</a></li>
+                  <li><button onClick={handleLogout}>Çıkış</button></li>
                 </ul>
               </div>
             )}
