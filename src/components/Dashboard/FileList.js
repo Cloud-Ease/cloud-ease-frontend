@@ -3,7 +3,7 @@ import '../../CSS/Dashboard/FileList.css';
 
 // Dosya tiplerine göre simge belirlemek için yardımcı fonksiyon
 function getFileIcon(type) {
-  switch(type) {
+  switch (type) {
     case 'image':
       return 'far fa-file-image';
     case 'document':
@@ -23,7 +23,7 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
 
   const toggleFileSelection = (fileId) => {
     if (selectedFiles.includes(fileId)) {
-      setSelectedFiles(selectedFiles.filter(id => id !== fileId));
+      setSelectedFiles(selectedFiles.filter((id) => id !== fileId));
     } else {
       setSelectedFiles([...selectedFiles, fileId]);
     }
@@ -33,7 +33,7 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
     if (selectedFiles.length === files.length && files.length > 0) {
       setSelectedFiles([]);
     } else {
-      setSelectedFiles(files.map(file => file.id));
+      setSelectedFiles(files.map((file) => file.id));
     }
   };
 
@@ -44,19 +44,15 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
   // Dosyaları sıralama
   const sortedFiles = [...files].sort((a, b) => {
     const [field, order] = sortOrder.split('-');
-    
+
     if (field === 'name') {
-      return order === 'asc' 
-        ? a.name.localeCompare(b.name) 
-        : b.name.localeCompare(a.name);
+      return order === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
     } else if (field === 'date') {
-      return order === 'asc' 
-        ? new Date(a.date) - new Date(b.date) 
+      return order === 'asc'
+        ? new Date(a.date) - new Date(b.date)
         : new Date(b.date) - new Date(a.date);
     } else if (field === 'size') {
-      return order === 'asc' 
-        ? a.size - b.size 
-        : b.size - a.size;
+      return order === 'asc' ? a.size - b.size : b.size - a.size;
     }
     return 0;
   });
@@ -70,7 +66,7 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
     // Gerçek uygulamada burada dosya silme işlemi yapılır
     alert(`Siliniyor: ${fileName}`);
     // Silinen dosyayı seçili dosyalardan kaldır
-    setSelectedFiles(selectedFiles.filter(id => id !== fileId));
+    setSelectedFiles(selectedFiles.filter((id) => id !== fileId));
   };
 
   const handleBatchDownload = () => {
@@ -95,15 +91,15 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
       <div className="file-list-header">
         <div className="file-list-actions">
           <div className="select-all">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={selectedFiles.length === files.length && files.length > 0}
               onChange={toggleSelectAll}
               id="select-all-checkbox"
             />
             <label htmlFor="select-all-checkbox">Tümünü Seç</label>
           </div>
-          
+
           {selectedFiles.length > 0 && (
             <div className="batch-actions">
               <button className="download-btn" onClick={handleBatchDownload}>
@@ -115,7 +111,7 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
             </div>
           )}
         </div>
-        
+
         <div className="file-sort">
           <label htmlFor="sort-order">Sırala:</label>
           <select id="sort-order" value={sortOrder} onChange={handleSortChange}>
@@ -128,7 +124,7 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
           </select>
         </div>
       </div>
-      
+
       {loading ? (
         <div className="loading-files">
           <i className="fas fa-spinner fa-spin"></i>
@@ -138,43 +134,48 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
         <div className="no-files">
           <i className="far fa-folder-open"></i>
           <p>Hiç dosya bulunamadı.</p>
-          <button className="upload-btn" onClick={() => document.querySelector('input[type="file"]').click()}>
+          <button
+            className="upload-btn"
+            onClick={() => document.querySelector('input[type="file"]').click()}
+          >
             <i className="fas fa-upload"></i> Dosya Yükle
           </button>
         </div>
       ) : (
         <>
           <div className="file-grid">
-            {sortedFiles.map(file => (
-              <div 
-                key={file.id} 
+            {sortedFiles.map((file) => (
+              <div
+                key={file.id}
                 className={`file-item ${selectedFiles.includes(file.id) ? 'selected' : ''}`}
                 onClick={() => toggleFileSelection(file.id)}
               >
                 <div className="file-select">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={selectedFiles.includes(file.id)}
                     onChange={() => {}}
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
-                
+
                 <div className="file-icon">
                   <i className={getFileIcon(file.type)}></i>
                 </div>
-                
+
                 <div className="file-info">
-                  <div className="file-name" title={file.name}>{file.name}</div>
+                  <div className="file-name" title={file.name}>
+                    {file.name}
+                  </div>
                   <div className="file-meta">
                     <span className="file-size">{file.size} KB</span>
                     <span className="file-date">{new Date(file.date).toLocaleDateString()}</span>
                   </div>
                 </div>
-                
+
                 <div className="file-actions">
-                  <button 
-                    className="file-action-btn" 
+                  <button
+                    className="file-action-btn"
                     title="İndir"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -183,8 +184,8 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
                   >
                     <i className="fas fa-download"></i>
                   </button>
-                  <button 
-                    className="file-action-btn" 
+                  <button
+                    className="file-action-btn"
                     title="Sil"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -193,8 +194,8 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
                   >
                     <i className="fas fa-trash-alt"></i>
                   </button>
-                  <button 
-                    className="file-action-btn" 
+                  <button
+                    className="file-action-btn"
                     title="Daha Fazla"
                     onClick={(e) => e.stopPropagation()}
                   >
@@ -204,19 +205,19 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
               </div>
             ))}
           </div>
-          
+
           <div className="pagination">
-            <button 
-              className="pagination-btn prev" 
+            <button
+              className="pagination-btn prev"
               disabled={currentPage === 1}
               onClick={() => onPageChange(currentPage - 1)}
             >
               <i className="fas fa-chevron-left"></i> Önceki
             </button>
-            
+
             <div className="pagination-pages">
-              {pageNumbers.map(page => (
-                <button 
+              {pageNumbers.map((page) => (
+                <button
                   key={page}
                   className={`pagination-page ${currentPage === page ? 'active' : ''}`}
                   onClick={() => onPageChange(page)}
@@ -225,9 +226,9 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
                 </button>
               ))}
             </div>
-            
-            <button 
-              className="pagination-btn next" 
+
+            <button
+              className="pagination-btn next"
               disabled={currentPage === totalPages}
               onClick={() => onPageChange(currentPage + 1)}
             >
@@ -240,4 +241,4 @@ function FileList({ files, loading, currentPage, totalPages, onPageChange }) {
   );
 }
 
-export default FileList; 
+export default FileList;

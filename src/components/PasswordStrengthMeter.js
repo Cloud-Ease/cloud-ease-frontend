@@ -1,11 +1,11 @@
 import React from 'react';
-import "../CSS/PasswordStrengthMeter.css";
+import '../CSS/PasswordStrengthMeter.css';
 
 function PasswordStrengthMeter({ score, message }) {
   return (
     <div className="password-strength">
       <div className="strength-meter">
-        <div 
+        <div
           className={`strength-progress strength-${score >= 5 ? 5 : score}`}
           style={{ width: `${(score / 5) * 100}%` }}
         ></div>
@@ -15,4 +15,4 @@ function PasswordStrengthMeter({ score, message }) {
   );
 }
 
-export default PasswordStrengthMeter; 
+export default PasswordStrengthMeter;

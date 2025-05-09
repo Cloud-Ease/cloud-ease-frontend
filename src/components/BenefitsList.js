@@ -1,5 +1,5 @@
 import React from 'react';
-import "../CSS/BenefitsList.css";
+import '../CSS/BenefitsList.css';
 
 function BenefitsList({ title, benefits, className }) {
   return (
@@ -7,11 +7,13 @@ function BenefitsList({ title, benefits, className }) {
       <h4>{title}</h4>
       <ul className="benefits-list">
         {benefits.map((benefit, index) => (
-          <li key={index}><i className="fas fa-check-circle"></i> {benefit}</li>
+          <li key={index}>
+            <i className="fas fa-check-circle"></i> {benefit}
+          </li>
         ))}
       </ul>
     </div>
   );
 }
 
-export default BenefitsList; 
+export default BenefitsList;

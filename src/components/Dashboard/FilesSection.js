@@ -14,7 +14,7 @@ function FilesSection() {
   const [filterCategory, setFilterCategory] = useState('all');
   const [sortBy, setSortBy] = useState('name');
   const [loading, setLoading] = useState(true);
-  
+
   // Dosyaları .NET backend'den yükleme
   useEffect(() => {
     // API'dan dosyaları yükleme
@@ -22,38 +22,38 @@ function FilesSection() {
     //   try {
     //     setLoading(true);
     //     const token = localStorage.getItem('authToken');
-    //     
+    //
     //     // API endpoint'ini yapılandır
     //     let endpoint = FILES_ENDPOINT;
-    //     
+    //
     //     // Filtreleme ve sıralama parametreleri ekle
     //     const params = new URLSearchParams();
-    //     
+    //
     //     if (filterCategory !== 'all') {
     //       params.append('category', filterCategory);
     //     }
-    //     
+    //
     //     if (searchTerm) {
     //       params.append('search', searchTerm);
     //     }
-    //     
+    //
     //     params.append('sortBy', sortBy);
-    //     
+    //
     //     // Parametreler varsa ekle
     //     if (params.toString()) {
     //       endpoint = `${endpoint}?${params.toString()}`;
     //     }
-    //     
+    //
     //     const response = await fetch(endpoint, {
     //       headers: {
     //         'Authorization': `Bearer ${token}`
     //       }
     //     });
-    //     
+    //
     //     if (!response.ok) {
     //       throw new Error('Dosyalar yüklenemedi');
     //     }
-    //     
+    //
     //     const data = await response.json();
     //     setFiles(data);
     //   } catch (error) {
@@ -64,9 +64,9 @@ function FilesSection() {
     //     setLoading(false);
     //   }
     // }
-    // 
+    //
     // fetchFiles();
-    
+
     // Geçici olarak örnek veri göster
     // Bu kısım backend entegrasyonu tamamlandığında kaldırılacak
     setTimeout(() => {
@@ -78,7 +78,7 @@ function FilesSection() {
           size: 2500000,
           uploadDate: '2023-06-15T10:30:00',
           isStarred: true,
-          category: 'document'
+          category: 'document',
         },
         {
           id: '2',
@@ -87,7 +87,7 @@ function FilesSection() {
           size: 1200000,
           uploadDate: '2023-07-20T14:45:00',
           isStarred: false,
-          category: 'image'
+          category: 'image',
         },
         {
           id: '3',
@@ -96,7 +96,7 @@ function FilesSection() {
           size: 4500000,
           uploadDate: '2023-08-05T09:15:00',
           isStarred: true,
-          category: 'document'
+          category: 'document',
         },
         {
           id: '4',
@@ -105,7 +105,7 @@ function FilesSection() {
           size: 8700000,
           uploadDate: '2023-08-10T16:20:00',
           isStarred: false,
-          category: 'media'
+          category: 'media',
         },
         {
           id: '5',
@@ -114,26 +114,24 @@ function FilesSection() {
           size: 15000000,
           uploadDate: '2023-08-12T11:10:00',
           isStarred: false,
-          category: 'media'
-        }
+          category: 'media',
+        },
       ];
-      
+
       // Arama filtrelemesi uygula
       let filteredFiles = dummyFiles;
-      
+
       if (searchTerm) {
-        filteredFiles = filteredFiles.filter(file => 
+        filteredFiles = filteredFiles.filter((file) =>
           file.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
       }
-      
+
       // Kategori filtrelemesi uygula
       if (filterCategory !== 'all') {
-        filteredFiles = filteredFiles.filter(file => 
-          file.category === filterCategory
-        );
+        filteredFiles = filteredFiles.filter((file) => file.category === filterCategory);
       }
-      
+
       // Sıralama uygula
       filteredFiles.sort((a, b) => {
         if (sortBy === 'name') {
@@ -145,43 +143,38 @@ function FilesSection() {
         }
         return 0;
       });
-      
+
       setFiles(filteredFiles);
       setLoading(false);
     }, 1000); // 1 saniye simüle edilmiş yükleme süresi
-    
   }, [searchTerm, filterCategory, sortBy]);
-  
+
   const handleDelete = (fileId) => {
     // Dosyayı listeden kaldır
-    setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
+    setFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
     // Not: Gerçek backend entegrasyonunda, dosya silme API çağrısı FileCard bileşeni içinde gerçekleştirilecek
   };
-  
+
   const handleStar = (fileId) => {
     // Dosyanın yıldız durumunu güncelle
-    setFiles(prevFiles => 
-      prevFiles.map(file => 
-        file.id === fileId 
-          ? { ...file, isStarred: !file.isStarred } 
-          : file
-      )
+    setFiles((prevFiles) =>
+      prevFiles.map((file) => (file.id === fileId ? { ...file, isStarred: !file.isStarred } : file))
     );
     // Not: Gerçek backend entegrasyonunda, yıldız güncelleme API çağrısı FileCard bileşeni içinde gerçekleştirilecek
   };
-  
+
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
-  
+
   const handleCategoryFilter = (e) => {
     setFilterCategory(e.target.value);
   };
-  
+
   const handleSort = (e) => {
     setSortBy(e.target.value);
   };
-  
+
   // Dosya arama işlevi
   // const searchFiles = async (term) => {
   //   if (!term) {
@@ -189,21 +182,21 @@ function FilesSection() {
   //     fetchFiles();
   //     return;
   //   }
-  //   
+  //
   //   try {
   //     setLoading(true);
   //     const token = localStorage.getItem('authToken');
-  //     
+  //
   //     const response = await fetch(`${SEARCH_ENDPOINT}?query=${encodeURIComponent(term)}`, {
   //       headers: {
   //         'Authorization': `Bearer ${token}`
   //       }
   //     });
-  //     
+  //
   //     if (!response.ok) {
   //       throw new Error('Arama yapılamadı');
   //     }
-  //     
+  //
   //     const data = await response.json();
   //     setFiles(data);
   //   } catch (error) {
@@ -212,12 +205,12 @@ function FilesSection() {
   //     setLoading(false);
   //   }
   // };
-  
+
   return (
     <div className="files-section">
       <div className="files-header">
         <h2>Dosyalarım</h2>
-        
+
         <div className="files-controls">
           <div className="search-bar">
             <input
@@ -228,10 +221,10 @@ function FilesSection() {
             />
             <i className="fas fa-search"></i>
           </div>
-          
+
           <div className="filter-controls">
-            <select 
-              value={filterCategory} 
+            <select
+              value={filterCategory}
               onChange={handleCategoryFilter}
               className="category-filter"
             >
@@ -240,12 +233,8 @@ function FilesSection() {
               <option value="image">Resimler</option>
               <option value="media">Medya</option>
             </select>
-            
-            <select 
-              value={sortBy} 
-              onChange={handleSort}
-              className="sort-by"
-            >
+
+            <select value={sortBy} onChange={handleSort} className="sort-by">
               <option value="name">İsme Göre</option>
               <option value="date">Tarihe Göre</option>
               <option value="size">Boyuta Göre</option>
@@ -253,7 +242,7 @@ function FilesSection() {
           </div>
         </div>
       </div>
-      
+
       <div className="files-grid">
         {loading ? (
           <div className="loading-indicator">
@@ -261,20 +250,15 @@ function FilesSection() {
             <p>Dosyalar yükleniyor...</p>
           </div>
         ) : files.length > 0 ? (
-          files.map(file => (
-            <FileCard 
-              key={file.id} 
-              file={file} 
-              onDelete={handleDelete}
-              onStar={handleStar}
-            />
+          files.map((file) => (
+            <FileCard key={file.id} file={file} onDelete={handleDelete} onStar={handleStar} />
           ))
         ) : (
           <div className="no-files-message">
             <i className="fas fa-folder-open"></i>
             <p>Dosya bulunamadı</p>
             <p className="no-files-hint">
-              {searchTerm || filterCategory !== 'all' 
+              {searchTerm || filterCategory !== 'all'
                 ? 'Arama kriterlerinizi değiştirmeyi deneyin'
                 : 'Dosyalarınızı burada görüntülemek için yükleyin'}
             </p>
@@ -285,4 +269,4 @@ function FilesSection() {
   );
 }
 
-export default FilesSection; 
+export default FilesSection;

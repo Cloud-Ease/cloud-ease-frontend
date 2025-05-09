@@ -15,7 +15,7 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
   const [activeCategory, setActiveCategory] = useState('all');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const fileInputRef = useRef(null);
-  
+
   // .NET backend'den kategorileri çekme
   // const [categories, setCategories] = useState([]);
   // useEffect(() => {
@@ -58,7 +58,7 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
     { id: 'documents', name: 'Dökümanlar' },
     { id: 'music', name: 'Müzik' },
     { id: 'videos', name: 'Videolar' },
-    { id: 'other', name: 'Diğer' }
+    { id: 'other', name: 'Diğer' },
   ];
 
   const handleCategoryClick = (categoryId) => {
@@ -88,16 +88,16 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
     //         'Content-Type': 'application/json'
     //       }
     //     });
-    //     
+    //
     //     if (!response.ok) {
     //       throw new Error('Çıkış yapılırken bir hata oluştu');
     //     }
-    //     
+    //
     //     // Jetonları ve kullanıcı bilgilerini temizle
     //     localStorage.removeItem('authToken');
     //     localStorage.removeItem('refreshToken');
     //     localStorage.removeItem('userInfo');
-    //     
+    //
     //     // Giriş sayfasına yönlendir
     //     navigate('/login');
     //   } catch (error) {
@@ -109,9 +109,9 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
     //     navigate('/login');
     //   }
     // }
-    // 
+    //
     // logoutUser();
-    
+
     // Geçici olarak sadece yönlendirme yapacağız
     navigate('/login');
   };
@@ -134,7 +134,7 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
       //     // Form verisi oluştur
       //     const formData = new FormData();
       //     formData.append('file', file);
-      //     
+      //
       //     // Kullanıcı jetonu (token) ile birlikte dosyayı gönder
       //     const token = localStorage.getItem('authToken');
       //     const response = await fetch(UPLOAD_ENDPOINT, {
@@ -144,14 +144,14 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
       //       },
       //       body: formData
       //     });
-      //     
+      //
       //     if (!response.ok) {
       //       throw new Error('Dosya yüklenirken bir hata oluştu');
       //     }
-      //     
+      //
       //     const result = await response.json();
       //     alert(`Dosya başarıyla yüklendi: ${result.fileName}`);
-      //     
+      //
       //     // Dosya listesini yenilemek için bir callback çağrılabilir
       //     // onFileUploaded();
       //   } catch (error) {
@@ -159,9 +159,9 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
       //     alert(`Dosya yüklenirken bir hata oluştu: ${error.message}`);
       //   }
       // }
-      // 
+      //
       // uploadFile(selectedFile);
-      
+
       // Geçici olarak sadece bildirim gösterelim
       alert(`Dosya seçildi: ${selectedFile.name}`);
       // Formu sıfırla
@@ -180,26 +180,28 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
   //           'Authorization': `Bearer ${token}`
   //         }
   //       });
-  //       
+  //
   //       if (!response.ok) {
   //         throw new Error('Kullanıcı bilgileri alınamadı');
   //       }
-  //       
+  //
   //       const data = await response.json();
   //       setUserInfo(data);
   //     } catch (error) {
   //       console.error('Kullanıcı bilgileri yüklenirken hata:', error);
   //     }
   //   }
-  //   
+  //
   //   fetchUserInfo();
   // }, []);
 
   return (
     <header className="dashboard-header">
       <div className="dashboard-header-top">
-        <div className="dashboard-logo" onClick={() => navigate('/')}>Cloud Ease</div>
-        
+        <div className="dashboard-logo" onClick={() => navigate('/')}>
+          Cloud Ease
+        </div>
+
         <form className="dashboard-search-bar" onSubmit={handleSearchSubmit}>
           <input
             type="text"
@@ -211,12 +213,12 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
             <i className="fas fa-search"></i>
           </button>
         </form>
-        
+
         <div className="dashboard-actions">
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            style={{ display: 'none' }} 
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
             onChange={handleFileChange}
           />
           <button className="upload-btn" onClick={handleFileUploadClick}>
@@ -231,21 +233,27 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
             {showUserDropdown && (
               <div className="user-dropdown">
                 <ul>
-                  <li><a href="#profile">Profil</a></li>
-                  <li><a href="#settings">Ayarlar</a></li>
-                  <li><button onClick={handleLogout}>Çıkış</button></li>
+                  <li>
+                    <a href="#profile">Profil</a>
+                  </li>
+                  <li>
+                    <a href="#settings">Ayarlar</a>
+                  </li>
+                  <li>
+                    <button onClick={handleLogout}>Çıkış</button>
+                  </li>
                 </ul>
               </div>
             )}
           </div>
         </div>
       </div>
-      
+
       <nav className="dashboard-categories">
         <ul>
-          {categories.map(category => (
+          {categories.map((category) => (
             <li key={category.id}>
-              <button 
+              <button
                 className={activeCategory === category.id ? 'active' : ''}
                 onClick={() => handleCategoryClick(category.id)}
               >
@@ -259,4 +267,4 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
   );
 }
 
-export default DashboardHeader; 
+export default DashboardHeader;

@@ -20,10 +20,10 @@ Coded by www.creative-tim.com
  */
 
 // Material Kit 2 React Base Styles
-import colors from "assets/theme/base/colors";
+import colors from 'assets/theme/base/colors';
 
 // Material Kit 2 React Helper Functions
-import pxToRem from "assets/theme/functions/pxToRem";
+import pxToRem from 'assets/theme/functions/pxToRem';
 
 const { dark } = colors;
 
@@ -140,7 +140,7 @@ const typography = {
     fontSize: baseProperties.fontSizeSM,
     fontWeight: baseProperties.fontWeightLight,
     lineHeight: 1.5,
-    textTransform: "uppercase",
+    textTransform: 'uppercase',
   },
 
   caption: {
@@ -191,8 +191,8 @@ const typography = {
     md: baseProperties.fontSizeMD,
     lg: baseProperties.fontSizeLG,
     xl: baseProperties.fontSizeXL,
-    "2xl": baseProperties.fontSize2XL,
-    "3xl": baseProperties.fontSize3XL,
+    '2xl': baseProperties.fontSize2XL,
+    '3xl': baseProperties.fontSize3XL,
   },
 
   lineHeight: {
