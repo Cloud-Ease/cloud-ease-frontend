@@ -27,7 +27,7 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const handleDrop = (e) => {
     e.preventDefault();
     setDragOver(false);
-    
+
     if (e.dataTransfer.items) {
       handleFiles(Array.from(e.dataTransfer.files));
     }
@@ -37,68 +37,68 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   const handleFileSelect = (e) => {
     handleFiles(Array.from(e.target.files));
   };
-  
+
   const handleFolderSelect = (e) => {
     handleFiles(Array.from(e.target.files));
   };
 
   const handleFiles = (selectedFiles) => {
     if (!selectedFiles.length) return;
-    
+
     // Mevcut dosyalara ekle ve her dosya için ilerleme durumu oluştur
     const newFiles = [...files];
     const newProgress = { ...uploadProgress };
-    
+
     for (const file of selectedFiles) {
       // Zaten eklenmemiş ise ekle
-      if (!files.some(f => f.name === file.name && f.size === file.size)) {
+      if (!files.some((f) => f.name === file.name && f.size === file.size)) {
         newFiles.push(file);
         newProgress[file.name] = 0;
       }
     }
-    
+
     setFiles(newFiles);
     setUploadProgress(newProgress);
   };
-  
+
   // Dosya kaldırma işlemi
   const removeFile = (fileName) => {
-    setFiles(files.filter(file => file.name !== fileName));
-    
+    setFiles(files.filter((file) => file.name !== fileName));
+
     // İlerleme durumunu da güncelle
     const newProgress = { ...uploadProgress };
     delete newProgress[fileName];
     setUploadProgress(newProgress);
   };
-  
+
   // Dosya yükleme işlemi
   const uploadFiles = async () => {
     if (files.length === 0) return;
-    
+
     setUploading(true);
-    
+
     // .NET Backend entegrasyonu için dosya yükleme fonksiyonu
     // async function uploadToServer() {
     //   try {
     //     const token = localStorage.getItem('authToken');
-    //     
+    //
     //     // Her bir dosyayı ayrı ayrı yükle
     //     const uploadPromises = files.map(async (file) => {
     //       const formData = new FormData();
     //       formData.append('file', file);
-    //       
+    //
     //       // Dosya meta verilerini ekle
     //       formData.append('fileName', file.name);
     //       formData.append('fileType', file.type);
     //       formData.append('fileSize', file.size.toString());
-    //       
+    //
     //       // XHR kullanarak ilerleme durumunu izleyebiliriz
     //       return new Promise((resolve, reject) => {
     //         const xhr = new XMLHttpRequest();
-    //         
+    //
     //         xhr.open('POST', UPLOAD_ENDPOINT, true);
     //         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    //         
+    //
     //         // İlerleme durumunu takip et
     //         xhr.upload.onprogress = (event) => {
     //           if (event.lengthComputable) {
@@ -109,7 +109,7 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     //             }));
     //           }
     //         };
-    //         
+    //
     //         xhr.onload = () => {
     //           if (xhr.status >= 200 && xhr.status < 300) {
     //             resolve(xhr.response);
@@ -117,21 +117,21 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     //             reject(new Error(`Dosya yükleme hatası: ${xhr.statusText}`));
     //           }
     //         };
-    //         
+    //
     //         xhr.onerror = () => {
     //           reject(new Error('Dosya yüklenirken ağ hatası oluştu'));
     //         };
-    //         
+    //
     //         xhr.send(formData);
     //       });
     //     });
-    //     
+    //
     //     // Tüm dosyaların yüklenmesini bekle
     //     await Promise.all(uploadPromises);
-    //     
+    //
     //     // Yükleme tamamlandığında başarılı olduğunu bildir
     //     onUploadSuccess();
-    //     
+    //
     //     // Modalı kapat ve durumu sıfırla
     //     resetAndClose();
     //   } catch (error) {
@@ -140,29 +140,29 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     //     alert('Dosya yükleme sırasında bir hata oluştu. Lütfen tekrar deneyin.');
     //   }
     // }
-    // 
+    //
     // uploadToServer();
-    
+
     // Simüle edilmiş yükleme işlemi (Backend entegrasyonu olmadan)
     simulateUpload();
   };
-  
+
   // Yükleme işlemini simüle et (Backend entegrasyonu tamamlanana kadar)
   const simulateUpload = () => {
     // Her bir dosya için sahte ilerleme oluştur
-    files.forEach(file => {
+    files.forEach((file) => {
       let progress = 0;
-      
+
       const interval = setInterval(() => {
         progress += Math.floor(Math.random() * 10) + 5;
-        
+
         if (progress >= 100) {
           progress = 100;
           clearInterval(interval);
-          
+
           // Tüm dosyalar %100 olduğunda yüklemeyi tamamla
-          const allDone = Object.values(uploadProgress).every(p => p >= 100);
-          
+          const allDone = Object.values(uploadProgress).every((p) => p >= 100);
+
           if (allDone) {
             setTimeout(() => {
               onUploadSuccess();
@@ -170,15 +170,15 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
             }, 500);
           }
         }
-        
-        setUploadProgress(prev => ({
+
+        setUploadProgress((prev) => ({
           ...prev,
-          [file.name]: progress
+          [file.name]: progress,
         }));
       }, 300);
     });
   };
-  
+
   // Modal durumunu sıfırlama ve kapatma
   const resetAndClose = () => {
     setFiles([]);
@@ -186,29 +186,31 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     setUploadProgress({});
     onClose();
   };
-  
+
   // Dosya boyutunu formatla
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
-    
+
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
-  
+
   if (!isOpen) return null;
-  
+
   return (
     <div className="upload-modal-overlay">
       <div className="upload-modal">
         <div className="upload-modal-header">
           <h2>Dosya Yükle</h2>
-          <button className="close-button" onClick={resetAndClose}>×</button>
+          <button className="close-button" onClick={resetAndClose}>
+            ×
+          </button>
         </div>
-        
-        <div 
+
+        <div
           className={`upload-drop-area ${dragOver ? 'drag-over' : ''}`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
@@ -217,19 +219,19 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
           <div className="upload-icon">
             <i className="fas fa-cloud-upload-alt"></i>
           </div>
-          
+
           <p>Dosyaları sürükleyip bırakın veya</p>
-          
+
           <div className="upload-buttons">
-            <button 
+            <button
               className="choose-file-btn"
               onClick={() => fileInputRef.current.click()}
               disabled={uploading}
             >
               Dosya Seç
             </button>
-            
-            <button 
+
+            <button
               className="choose-folder-btn"
               onClick={() => folderInputRef.current.click()}
               disabled={uploading}
@@ -237,18 +239,18 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
               Klasör Seç
             </button>
           </div>
-          
-          <input 
-            type="file" 
+
+          <input
+            type="file"
             ref={fileInputRef}
             onChange={handleFileSelect}
             style={{ display: 'none' }}
             multiple
             disabled={uploading}
           />
-          
-          <input 
-            type="file" 
+
+          <input
+            type="file"
             ref={folderInputRef}
             onChange={handleFolderSelect}
             style={{ display: 'none' }}
@@ -258,11 +260,11 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
             disabled={uploading}
           />
         </div>
-        
+
         {files.length > 0 && (
           <div className="selected-files">
             <h3>Seçilen Dosyalar</h3>
-            
+
             <div className="file-list">
               {files.map((file) => (
                 <div key={file.name} className="file-item">
@@ -270,23 +272,20 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                     <span className="file-name">{file.name}</span>
                     <span className="file-size">{formatFileSize(file.size)}</span>
                   </div>
-                  
+
                   <div className="file-actions">
                     {uploadProgress[file.name] > 0 && (
                       <div className="progress-bar">
-                        <div 
+                        <div
                           className="progress-fill"
                           style={{ width: `${uploadProgress[file.name]}%` }}
                         ></div>
                         <span className="progress-text">{uploadProgress[file.name]}%</span>
                       </div>
                     )}
-                    
+
                     {!uploading && (
-                      <button 
-                        className="remove-file-btn"
-                        onClick={() => removeFile(file.name)}
-                      >
+                      <button className="remove-file-btn" onClick={() => removeFile(file.name)}>
                         <i className="fas fa-times"></i>
                       </button>
                     )}
@@ -296,17 +295,13 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
             </div>
           </div>
         )}
-        
+
         <div className="upload-modal-footer">
-          <button 
-            className="cancel-btn"
-            onClick={resetAndClose}
-            disabled={uploading}
-          >
+          <button className="cancel-btn" onClick={resetAndClose} disabled={uploading}>
             İptal
           </button>
-          
-          <button 
+
+          <button
             className={`upload-btn ${files.length === 0 ? 'disabled' : ''}`}
             onClick={uploadFiles}
             disabled={files.length === 0 || uploading}
@@ -319,4 +314,4 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
   );
 }
 
-export default UploadModal; 
+export default UploadModal;

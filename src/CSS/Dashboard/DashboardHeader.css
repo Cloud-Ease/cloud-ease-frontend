@@ -184,26 +184,26 @@
     align-items: stretch;
     padding: 1rem;
   }
-  
+
   .dashboard-logo {
     margin-bottom: 1rem;
   }
-  
+
   .dashboard-search-bar {
     margin: 1rem 0;
     max-width: none;
   }
-  
+
   .dashboard-actions {
     justify-content: space-between;
   }
-  
+
   .dashboard-categories {
     padding: 0 1rem;
     overflow-x: auto;
   }
-  
+
   .dashboard-categories ul {
     width: max-content;
   }
-} 
+}

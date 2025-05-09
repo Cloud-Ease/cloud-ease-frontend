@@ -12,11 +12,11 @@ import '../../CSS/Dashboard/FileCard.css';
 
 function FileCard({ file, onDelete, onStar }) {
   const [showOptions, setShowOptions] = useState(false);
-  
+
   const toggleOptions = () => {
     setShowOptions(!showOptions);
   };
-  
+
   const handleDownload = () => {
     // .NET backend'den dosya indirme
     // async function downloadFile() {
@@ -28,14 +28,14 @@ function FileCard({ file, onDelete, onStar }) {
     //         'Authorization': `Bearer ${token}`
     //       }
     //     });
-    //     
+    //
     //     if (!response.ok) {
     //       throw new Error('Dosya indirilemedi');
     //     }
-    //     
+    //
     //     // Dosyayı blob olarak al
     //     const blob = await response.blob();
-    //     
+    //
     //     // İndirme linkini oluştur
     //     const url = window.URL.createObjectURL(blob);
     //     const a = document.createElement('a');
@@ -43,7 +43,7 @@ function FileCard({ file, onDelete, onStar }) {
     //     a.download = file.name;
     //     document.body.appendChild(a);
     //     a.click();
-    //     
+    //
     //     // Temizlik yap
     //     window.URL.revokeObjectURL(url);
     //     document.body.removeChild(a);
@@ -52,13 +52,13 @@ function FileCard({ file, onDelete, onStar }) {
     //     alert(`Dosya indirilemedi: ${error.message}`);
     //   }
     // }
-    // 
+    //
     // downloadFile();
-    
+
     // Geçici olarak sadece bildirim gösterelim
     alert(`${file.name} dosyası indirilecek`);
   };
-  
+
   const handleDelete = () => {
     // .NET backend'den dosya silme
     // async function deleteFile() {
@@ -70,11 +70,11 @@ function FileCard({ file, onDelete, onStar }) {
     //         'Authorization': `Bearer ${token}`
     //       }
     //     });
-    //     
+    //
     //     if (!response.ok) {
     //       throw new Error('Dosya silinemedi');
     //     }
-    //     
+    //
     //     // Silme işlemi başarılı, UI'ı güncelle
     //     onDelete(file.id);
     //   } catch (error) {
@@ -82,18 +82,18 @@ function FileCard({ file, onDelete, onStar }) {
     //     alert(`Dosya silinemedi: ${error.message}`);
     //   }
     // }
-    // 
+    //
     // // Silme işlemi için onay iste
     // if (window.confirm(`${file.name} dosyasını silmek istediğinize emin misiniz?`)) {
     //   deleteFile();
     // }
-    
+
     // Geçici olarak sadece callback çağıralım
     if (window.confirm(`${file.name} dosyasını silmek istediğinize emin misiniz?`)) {
       onDelete(file.id);
     }
   };
-  
+
   const handleStar = () => {
     // .NET backend'de dosya yıldızlama/işaretleme
     // async function toggleStar() {
@@ -109,11 +109,11 @@ function FileCard({ file, onDelete, onStar }) {
     //         isStarred: !file.isStarred
     //       })
     //     });
-    //     
+    //
     //     if (!response.ok) {
     //       throw new Error('Dosya işaretlenemedi');
     //     }
-    //     
+    //
     //     // İşlem başarılı, UI'ı güncelle
     //     onStar(file.id);
     //   } catch (error) {
@@ -121,13 +121,13 @@ function FileCard({ file, onDelete, onStar }) {
     //     alert(`Dosya işaretlenemedi: ${error.message}`);
     //   }
     // }
-    // 
+    //
     // toggleStar();
-    
+
     // Geçici olarak sadece callback çağıralım
     onStar(file.id);
   };
-  
+
   // Dosya tipi simgeleri (ikon)
   const getFileIcon = (fileType) => {
     switch (fileType) {
@@ -147,40 +147,37 @@ function FileCard({ file, onDelete, onStar }) {
         return <i className="fas fa-file"></i>;
     }
   };
-  
+
   // Dosya boyutu formatlama
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
-    
+
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
+
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
-  
+
   // Tarih formatlama
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return formatDistanceToNow(date, { addSuffix: true, locale: tr });
   };
-  
+
   return (
     <div className="file-card">
       <div className="file-card-header">
         <div className="file-icon">{getFileIcon(file.type)}</div>
         <div className="file-options">
-          <button 
+          <button
             className={`star-button ${file.isStarred ? 'starred' : ''}`}
             onClick={handleStar}
             title={file.isStarred ? 'İşareti kaldır' : 'İşaretle'}
           >
             <i className={`fas ${file.isStarred ? 'fa-star' : 'fa-star'}`}></i>
           </button>
-          <button 
-            className="options-button"
-            onClick={toggleOptions}
-          >
+          <button className="options-button" onClick={toggleOptions}>
             <i className="fas fa-ellipsis-v"></i>
           </button>
           {showOptions && (
@@ -195,7 +192,7 @@ function FileCard({ file, onDelete, onStar }) {
           )}
         </div>
       </div>
-      
+
       <div className="file-info">
         <h3 className="file-name">{file.name}</h3>
         <div className="file-details">
@@ -207,4 +204,4 @@ function FileCard({ file, onDelete, onStar }) {
   );
 }
 
-export default FileCard; 
+export default FileCard;

@@ -86,7 +86,8 @@
   margin-top: 15px;
 }
 
-.choose-file-btn, .choose-folder-btn {
+.choose-file-btn,
+.choose-folder-btn {
   padding: 8px 16px;
   background-color: #4a90e2;
   color: white;
@@ -97,11 +98,13 @@
   transition: background-color 0.2s;
 }
 
-.choose-file-btn:hover, .choose-folder-btn:hover {
+.choose-file-btn:hover,
+.choose-folder-btn:hover {
   background-color: #357ab8;
 }
 
-.choose-file-btn:disabled, .choose-folder-btn:disabled {
+.choose-file-btn:disabled,
+.choose-folder-btn:disabled {
   background-color: #a8c9f2;
   cursor: not-allowed;
 }
@@ -240,7 +243,8 @@
   background-color: #357ab8;
 }
 
-.upload-btn.disabled, .upload-btn:disabled {
+.upload-btn.disabled,
+.upload-btn:disabled {
   background-color: #a8c9f2;
   cursor: not-allowed;
 }
@@ -250,11 +254,11 @@
   .upload-modal {
     width: 95%;
   }
-  
+
   .file-name {
     max-width: 200px;
   }
-  
+
   .progress-bar {
     width: 80px;
   }
@@ -267,26 +271,27 @@
     max-height: 100vh;
     border-radius: 0;
   }
-  
+
   .upload-drop-area {
     margin: 10px;
     padding: 20px 10px;
   }
-  
+
   .file-name {
     max-width: 150px;
   }
-  
+
   .progress-bar {
     width: 60px;
   }
-  
+
   .upload-buttons {
     flex-direction: column;
     width: 100%;
   }
-  
-  .choose-file-btn, .choose-folder-btn {
+
+  .choose-file-btn,
+  .choose-folder-btn {
     width: 100%;
   }
-} 
+}

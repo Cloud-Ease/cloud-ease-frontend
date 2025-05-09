@@ -14,9 +14,9 @@ Coded by www.creative-tim.com
 */
 
 // Material Kit 2 React base styles
-import colors from "assets/theme/base/colors";
-import boxShadows from "assets/theme/base/boxShadows";
-import borders from "assets/theme/base/borders";
+import colors from 'assets/theme/base/colors';
+import boxShadows from 'assets/theme/base/boxShadows';
+import borders from 'assets/theme/base/borders';
 
 const { transparent } = colors;
 const { lg } = boxShadows;

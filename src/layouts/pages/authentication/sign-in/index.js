@@ -1,5 +1,5 @@
 import React from 'react';
-  /*
+/*
 =========================================================
 * Material Kit 2 React - v2.1.0
 =========================================================
@@ -15,7 +15,7 @@ Coded by www.creative-tim.com
 */
 
 // Material Kit 2 React pages
-import SignIn from "pages/LandingPages/SignIn";
+import SignIn from 'pages/LandingPages/SignIn';
 
 export default function SignInPage() {
   return <SignIn />;

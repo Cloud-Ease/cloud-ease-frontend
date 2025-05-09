@@ -79,9 +79,9 @@ html {
 }
 
 /* Better form inputs for mobile */
-input, 
-select, 
-textarea, 
+input,
+select,
+textarea,
 button {
   font-family: inherit;
   font-size: 1rem;
@@ -90,9 +90,9 @@ button {
 
 /* Fix for iOS input zoom issues */
 @media screen and (max-width: 768px) {
-  input[type="text"],
-  input[type="email"],
-  input[type="password"] {
+  input[type='text'],
+  input[type='email'],
+  input[type='password'] {
     font-size: 16px;
   }
-} 
+}

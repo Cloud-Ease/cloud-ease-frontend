@@ -1,9 +1,9 @@
 import React from 'react';
-import "../CSS/FormInput.css";
+import '../CSS/FormInput.css';
 
 function FormInput({
   label,
-  type = "text",
+  type = 'text',
   id,
   name,
   value,
@@ -32,14 +32,12 @@ function FormInput({
           autoComplete={autoComplete}
           minLength={minLength}
           maxLength={maxLength}
-          className={errorMessage ? "input-error" : ""}
+          className={errorMessage ? 'input-error' : ''}
         />
       </div>
-      {errorMessage && (
-        <div className="input-error-message">{errorMessage}</div>
-      )}
+      {errorMessage && <div className="input-error-message">{errorMessage}</div>}
     </div>
   );
 }
 
-export default FormInput; 
+export default FormInput;

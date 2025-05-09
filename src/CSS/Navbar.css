@@ -26,7 +26,8 @@
   gap: 1rem;
 }
 
-.login-btn, .register-btn {
+.login-btn,
+.register-btn {
   padding: 0.6rem 1.2rem;
   border-radius: 5px;
   font-weight: 600;
@@ -61,13 +62,14 @@
   .navbar {
     padding: 1rem;
   }
-  
+
   .logo {
     font-size: 1.5rem;
   }
-  
-  .login-btn, .register-btn {
+
+  .login-btn,
+  .register-btn {
     padding: 0.5rem 1rem;
     font-size: 0.8rem;
   }
-} 
+}

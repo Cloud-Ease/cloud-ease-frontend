@@ -68,7 +68,8 @@
   margin-left: auto;
 }
 
-.login-btn, .register-btn {
+.login-btn,
+.register-btn {
   padding: 0.7rem 1.5rem;
   border: none;
   border-radius: 4px;
@@ -88,7 +89,8 @@
   border: 1px solid rgba(255, 255, 255, 0.7);
 }
 
-.login-btn:hover, .login-btn:focus {
+.login-btn:hover,
+.login-btn:focus {
   background-color: rgba(255, 255, 255, 0.15);
   border-color: white;
   transform: translateY(-2px);
@@ -101,7 +103,8 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.register-btn:hover, .register-btn:focus {
+.register-btn:hover,
+.register-btn:focus {
   background-color: #f8f9fa;
   transform: translateY(-2px);
   box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
@@ -455,11 +458,11 @@
   .hero h1 {
     font-size: 3rem;
   }
-  
+
   .content {
     margin-top: 0;
   }
-  
+
   .stat-number {
     font-size: 2.5rem;
   }
@@ -469,15 +472,15 @@
   .hero h1 {
     font-size: 2.5rem;
   }
-  
+
   .hero p {
     font-size: 1.1rem;
   }
-  
+
   .welcome-card {
     padding: 2rem;
   }
-  
+
   .feature-icon {
     width: 70px;
     height: 70px;
@@ -489,58 +492,58 @@
   .header {
     height: 70vh;
   }
-  
+
   .navbar {
     padding: 1rem 5%;
   }
-  
+
   .hero {
     height: calc(70vh - 70px);
   }
-  
+
   .hero h1 {
     font-size: 2rem;
   }
-  
+
   .hero p {
     font-size: 1rem;
   }
-  
+
   .content {
     padding: 2rem 5%;
     margin-top: 0;
   }
-  
+
   .welcome-card h2 {
     font-size: 1.8rem;
   }
-  
+
   .welcome-card > p {
     font-size: 1rem;
   }
-  
+
   .features {
     flex-direction: column;
     gap: 1.5rem;
   }
-  
+
   .testimonial-container {
     gap: 1rem;
   }
-  
+
   .testimonial {
     flex: 0 0 280px;
     padding: 1.5rem;
   }
-  
+
   .footer {
     padding: 2rem 5%;
   }
-  
+
   .footer-content {
     flex-direction: column;
   }
-  
+
   .footer-links {
     gap: 2rem;
   }
@@ -550,122 +553,123 @@
   .header {
     height: 65vh;
   }
-  
+
   .navbar {
     padding: 1rem 4%;
   }
-  
+
   .logo {
     font-size: 1.5rem;
   }
-  
+
   .logo::before {
     font-size: 1.2rem;
   }
-  
+
   .auth-buttons {
     gap: 0.5rem;
   }
-  
-  .login-btn, .register-btn {
+
+  .login-btn,
+  .register-btn {
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
   }
-  
+
   .hero {
     height: calc(65vh - 60px);
   }
-  
+
   .hero h1 {
     font-size: 1.8rem;
     margin-bottom: 1rem;
   }
-  
+
   .hero p {
     font-size: 0.95rem;
     margin-bottom: 1.5rem;
   }
-  
+
   .hero-btn {
     padding: 0.8rem 1.5rem;
     font-size: 0.9rem;
   }
-  
+
   .content {
     padding: 1.5rem 4%;
     margin-top: 0;
   }
-  
+
   .welcome-card {
     padding: 1.5rem;
     border-radius: 10px;
   }
-  
+
   .welcome-card h2 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
   }
-  
+
   .welcome-card > p {
     font-size: 0.95rem;
     margin-bottom: 2rem;
   }
-  
+
   .feature {
     padding: 1.5rem;
     min-width: 100%;
   }
-  
+
   .feature-icon {
     width: 60px;
     height: 60px;
     font-size: 2rem;
     margin-bottom: 1rem;
   }
-  
+
   .feature h3 {
     font-size: 1.2rem;
     margin-bottom: 0.7rem;
   }
-  
+
   .feature p {
     font-size: 0.95rem;
   }
-  
+
   .stats-section {
     padding: 1.5rem;
     margin: 2.5rem auto;
     gap: 1.5rem;
   }
-  
+
   .stat-number {
     font-size: 2rem;
   }
-  
+
   .stat-label {
     font-size: 0.9rem;
   }
-  
+
   .testimonial-section h3 {
     font-size: 1.5rem;
     margin-bottom: 2rem;
   }
-  
+
   .testimonial {
     flex: 0 0 260px;
     padding: 1.2rem;
   }
-  
+
   .author-avatar {
     width: 40px;
     height: 40px;
     font-size: 1rem;
   }
-  
+
   .footer {
     padding: 2rem 4%;
   }
-  
+
   .footer-links-column {
     min-width: 120px;
   }
@@ -773,12 +777,12 @@
   .storage-categories {
     gap: 1.5rem;
   }
-  
+
   .category-item {
     min-width: 200px;
     padding: 1.5rem;
   }
-  
+
   .security-info {
     padding: 2rem;
   }
@@ -788,25 +792,25 @@
   .project-description h3 {
     font-size: 1.6rem;
   }
-  
+
   .project-text {
     font-size: 1rem;
   }
-  
+
   .storage-categories {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .category-item {
     min-width: 100%;
     max-width: 100%;
   }
-  
+
   .security-info {
     padding: 1.5rem;
   }
-  
+
   .pricing-highlight {
     padding: 1rem;
   }
@@ -816,21 +820,21 @@
   .project-description h3 {
     font-size: 1.4rem;
   }
-  
+
   .security-info h3 {
     font-size: 1.3rem;
   }
-  
+
   .category-icon {
     font-size: 2rem;
   }
-  
+
   .category-item h4 {
     font-size: 1.2rem;
   }
-  
+
   .pricing-highlight {
     font-size: 1rem;
     padding: 0.8rem;
   }
-} 
+}
