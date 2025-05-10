@@ -18,11 +18,11 @@ import "./CSS/App.css";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 // Pages
-import Homepage from "./Pages/Homepage";
-import Login from "./Pages/Login";
-import SignIn from "./Pages/SignIn";
-import Dashboard from "./Pages/Dashboard";
-import Profile from "./Pages/Profile";
+import Homepage from "./pages/Homepage";
+import Login from "./pages/Login";
+import SignIn from "./pages/SignIn";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
 
 function App() {
   // Geçici olarak true yapıyoruz
@@ -35,7 +35,7 @@ function App() {
     }
     return children;
   };
-
+  
   return (
     <Router>
       <div className="app-container">
