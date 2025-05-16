@@ -7,6 +7,7 @@ import SocialLoginButtons from '../components/SocialLoginButtons';
 import BenefitsList from '../components/BenefitsList';
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
 import { register } from '../firebase';
+import { getAuth } from 'firebase/auth';
 
 function SignIn() {
   const navigate = useNavigate();
@@ -104,23 +105,69 @@ function SignIn() {
       // Firebase'den gelen token'ı alıyoruz
       const token = await register(formData.email, formData.password);
 
-      // 🔐 Token'ı localStorage'a kaydediyoruz
+      // Token'ı localStorage'a kaydediyoruz
       localStorage.setItem('token', token);
 
-      // İstersen backend'e istek atabilirsin (örnek)
-      /*
-    await fetch("https://localhost:5001/api/file", {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    });
-    */
+      // Profil oluştur
+      const auth = getAuth();
+      if (auth.currentUser) {
+        try {
+          // Ad ve soyadı ayır
+          const nameParts = formData.fullName.split(' ');
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts.slice(1).join(' ') || '';
 
-      navigate('/dashboard'); // başarılı kayıt sonrası yönlendirme
+          // Backende gönderilecek veriyi loglayalım
+          const profileData = {
+            userId: auth.currentUser.uid,
+            firstName: firstName,
+            lastName: lastName,
+            email: formData.email,
+            phone: '',
+            avatarUrl: '',
+          };
+
+          console.log('Profil oluşturma verisi:', profileData);
+
+          // Backend'e profil oluşturma isteği gönder
+          const response = await fetch('https://localhost:7241/api/profile', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(profileData),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.text();
+            console.error(`Profil oluşturulurken hata: ${response.status}`, errorData);
+            throw new Error(`Profil oluşturulurken hata: ${response.status} - ${errorData}`);
+          }
+
+          const responseData = await response.json();
+          console.log('Oluşturulan profil yanıtı:', responseData);
+          console.log('Profil başarıyla oluşturuldu');
+        } catch (profileError) {
+          console.error('Profil oluşturma hatası:', profileError);
+          // Profil oluşturmada hata olsa bile devam ediyoruz
+        }
+      }
+
+      // Token kaydedildiğinden emin olmak için kontrol et
+      setTimeout(() => {
+        if (localStorage.getItem('token')) {
+          console.log("Token başarıyla kaydedildi, dashboard'a yönlendiriliyor...");
+          navigate('/dashboard-demo'); // başarılı kayıt sonrası yönlendirme
+        } else {
+          console.error('Token kaydedilemedi!');
+          setSignupError('Kayıt işlemi tamamlanamadı. Lütfen tekrar deneyin.');
+          setIsLoading(false);
+        }
+      }, 100);
     } catch (error) {
       console.error(error);
       setSignupError('Kayıt başarısız: ' + error.message);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -131,7 +178,21 @@ function SignIn() {
 
     // Simulate social signup with timeout
     setTimeout(() => {
-      navigate('/dashboard-demo'); // Gerçek uygulamada /dashboard olacak
+      try {
+        // Simüle edilmiş token
+        const simulatedToken =
+          'simulated_social_token_' + Math.random().toString(36).substring(2, 15);
+
+        // Token'ı localStorage'a kaydet
+        localStorage.setItem('token', simulatedToken);
+        console.log("Sosyal kayıt başarılı, token kaydedildi, dashboard'a yönlendiriliyor...");
+
+        navigate('/dashboard-demo'); // Gerçek uygulamada /dashboard olacak
+      } catch (error) {
+        console.error('Sosyal kayıt hatası:', error);
+        setSignupError('Sosyal kayıt işlemi başarısız oldu. Lütfen tekrar deneyin.');
+        setIsLoading(false);
+      }
     }, 1000);
   };
 
