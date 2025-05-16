@@ -1,0 +1,106 @@
+.profile-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-image: url('../assets/images/bg2.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  backdrop-filter: blur(3px);
+}
+
+.profile-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+  z-index: 0;
+}
+
+.profile-header {
+  position: relative;
+  z-index: 1;
+  padding: 1.5rem 2rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+}
+
+.profile-header h1 {
+  margin: 0 auto;
+  color: #1976d2;
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.back-to-dashboard {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.back-to-dashboard:hover {
+  background: #1565c0;
+  transform: translateY(-2px);
+}
+
+.back-to-dashboard:active {
+  transform: translateY(0);
+}
+
+/* Make the container scrollable */
+.profile-container > .MuiContainer-root {
+  flex: 1;
+  z-index: 1;
+  overflow-y: auto;
+  padding-bottom: 2rem;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .profile-header {
+    padding: 1.2rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .profile-header h1 {
+    margin: 0;
+  }
+
+  .back-to-dashboard {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .profile-header {
+    padding: 1rem;
+  }
+
+  .profile-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .back-to-dashboard {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}

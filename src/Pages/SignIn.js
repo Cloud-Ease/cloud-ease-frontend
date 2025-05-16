@@ -104,9 +104,20 @@ function SignIn() {
     try {
       // Firebase'den gelen token'ı alıyoruz
       const token = await register(formData.email, formData.password);
+      console.log('Firebase token alındı:', token ? 'Token var' : 'Token yok');
+      console.log('Token uzunluğu:', token ? token.length : 0);
+      console.log('Token başlangıç:', token ? token.substring(0, 20) + '...' : 'Yok');
 
       // Token'ı localStorage'a kaydediyoruz
       localStorage.setItem('token', token);
+      console.log("Token localStorage'a kaydedildi");
+
+      // Auth state event yayınla
+      const authEvent = new CustomEvent('authStateChanged', {
+        detail: { isAuthenticated: true },
+      });
+      window.dispatchEvent(authEvent);
+      console.log('Auth state event yayınlandı');
 
       // Profil oluştur
       const auth = getAuth();
@@ -117,17 +128,19 @@ function SignIn() {
           const firstName = nameParts[0] || '';
           const lastName = nameParts.slice(1).join(' ') || '';
 
-          // Backende gönderilecek veriyi loglayalım
+          // Backende gönderilecek veriyi tam olarak backend DTO'ya göre hazırla
+          // ProfileCreateDto { FirstName, LastName, Phone, AvatarUrl, Email }
           const profileData = {
-            userId: auth.currentUser.uid,
-            firstName: firstName,
-            lastName: lastName,
-            email: formData.email,
-            phone: '',
-            avatarUrl: '',
+            UserId: auth.currentUser.uid,
+            FirstName: firstName,
+            LastName: lastName,
+            Email: formData.email,
+            Phone: '',
+            AvatarUrl: '',
           };
 
           console.log('Profil oluşturma verisi:', profileData);
+          console.log('JSON olarak:', JSON.stringify(profileData, null, 2));
 
           // Backend'e profil oluşturma isteği gönder
           const response = await fetch('https://localhost:7241/api/profile', {
@@ -135,18 +148,33 @@ function SignIn() {
             headers: {
               Authorization: `Bearer ${token}`,
               'Content-Type': 'application/json',
+              Accept: 'application/json',
             },
             body: JSON.stringify(profileData),
           });
 
           if (!response.ok) {
-            const errorData = await response.text();
-            console.error(`Profil oluşturulurken hata: ${response.status}`, errorData);
-            throw new Error(`Profil oluşturulurken hata: ${response.status} - ${errorData}`);
+            let errorMessage = '';
+            try {
+              const errorData = await response.json();
+              errorMessage = JSON.stringify(errorData);
+            } catch (e) {
+              // Eğer JSON olarak parse edilemezse, text olarak al
+              errorMessage = await response.text();
+            }
+
+            console.error(`Profil oluşturulurken hata: ${response.status}`, errorMessage);
+            console.error('Request Headers:', {
+              Authorization: `Bearer ${token.substring(0, 10)}...`,
+              'Content-Type': 'application/json',
+            });
+            console.error('Request Body:', JSON.stringify(profileData));
+            throw new Error(`Profil oluşturulurken hata: ${response.status} - ${errorMessage}`);
           }
 
           const responseData = await response.json();
           console.log('Oluşturulan profil yanıtı:', responseData);
+          console.log('JSON olarak yanıt:', JSON.stringify(responseData, null, 2));
           console.log('Profil başarıyla oluşturuldu');
         } catch (profileError) {
           console.error('Profil oluşturma hatası:', profileError);
@@ -158,7 +186,7 @@ function SignIn() {
       setTimeout(() => {
         if (localStorage.getItem('token')) {
           console.log("Token başarıyla kaydedildi, dashboard'a yönlendiriliyor...");
-          navigate('/dashboard-demo'); // başarılı kayıt sonrası yönlendirme
+          window.location.href = '/dashboard-demo'; // URL'yi doğrudan değiştir
         } else {
           console.error('Token kaydedilemedi!');
           setSignupError('Kayıt işlemi tamamlanamadı. Lütfen tekrar deneyin.');
@@ -185,9 +213,17 @@ function SignIn() {
 
         // Token'ı localStorage'a kaydet
         localStorage.setItem('token', simulatedToken);
+
+        // Auth state event yayınla
+        const authEvent = new CustomEvent('authStateChanged', {
+          detail: { isAuthenticated: true },
+        });
+        window.dispatchEvent(authEvent);
+        console.log('Auth state event yayınlandı');
+
         console.log("Sosyal kayıt başarılı, token kaydedildi, dashboard'a yönlendiriliyor...");
 
-        navigate('/dashboard-demo'); // Gerçek uygulamada /dashboard olacak
+        window.location.href = '/dashboard-demo'; // URL'yi doğrudan değiştir
       } catch (error) {
         console.error('Sosyal kayıt hatası:', error);
         setSignupError('Sosyal kayıt işlemi başarısız oldu. Lütfen tekrar deneyin.');
@@ -206,9 +242,8 @@ function SignIn() {
   return (
     <div className="signin-container">
       <div className="signin-header">
-        <Navbar showAuthButtons={false} />
         <button className="back-to-home" onClick={() => navigate('/')} aria-label="Ana sayfaya dön">
-          <i className="fas fa-arrow-left"></i> Ana Sayfa
+          <i className="fas fa-arrow-left"></i> Ana Sayfaya Dön
         </button>
       </div>
       <div className="signin-form-container">

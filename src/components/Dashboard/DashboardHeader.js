@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Dashboard/DashboardHeader.css';
 import { logout } from '../../firebase'; // Firebase logout fonksiyonunu import et
+import { getAuth } from 'firebase/auth';
 
 // .NET API entegrasyon noktaları
 // const API_BASE_URL = 'https://api.example.com/api';
@@ -15,6 +16,7 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
   const fileInputRef = useRef(null);
 
   // .NET backend'den kategorileri çekme
@@ -61,6 +63,38 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
     { id: 'videos', name: 'Videolar' },
     { id: 'other', name: 'Diğer' },
   ];
+
+  // Firebase'den kullanıcı bilgilerini al
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      // Kullanıcı bilgilerini state'e kaydet
+      setUserInfo({
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.uid,
+      });
+
+      // Kullanıcı adından initials oluştur
+      const names = (user.displayName || '').split(' ');
+      const initials =
+        names.length > 0
+          ? names
+              .map((name) => name.charAt(0))
+              .join('')
+              .toUpperCase()
+              .substring(0, 2)
+          : 'KK';
+
+      setUserInfo((prev) => ({
+        ...prev,
+        initials,
+      }));
+    }
+  }, []);
 
   const handleCategoryClick = (categoryId) => {
     setActiveCategory(categoryId);
@@ -209,9 +243,11 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
           </button>
           <div className="user-menu">
             <div className="user-avatar" onClick={handleUserMenuToggle}>
-              {/* Burada kullanıcı avatarı gösterilecek */}
-              {/* userInfo && userInfo.avatar ? <img src={userInfo.avatar} alt="User" /> : <span>{userInfo ? userInfo.initials : 'KK'}</span> */}
-              <span>KK</span>
+              {userInfo && userInfo.photoURL ? (
+                <img src={userInfo.photoURL} alt={userInfo.displayName || 'User'} />
+              ) : (
+                <span>{userInfo ? userInfo.initials : 'KK'}</span>
+              )}
             </div>
             {showUserDropdown && (
               <div className="user-dropdown">

@@ -27,7 +27,10 @@
 }
 
 .login-btn,
-.register-btn {
+.register-btn,
+.profile-btn,
+.logout-btn,
+.home-btn {
   padding: 0.6rem 1.2rem;
   border-radius: 5px;
   font-weight: 600;
@@ -47,15 +50,38 @@
   background-color: #eef0ff;
 }
 
-.register-btn {
+.register-btn,
+.home-btn {
   background-color: #4361ee;
   color: white;
   border: 1px solid #4361ee;
 }
 
-.register-btn:hover {
+.register-btn:hover,
+.home-btn:hover {
   background-color: #3a56d4;
   border-color: #3a56d4;
+}
+
+.profile-btn {
+  background-color: transparent;
+  color: #4361ee;
+  border: 1px solid #4361ee;
+}
+
+.profile-btn:hover {
+  background-color: #eef0ff;
+}
+
+.logout-btn {
+  background-color: #f44336;
+  color: white;
+  border: 1px solid #f44336;
+}
+
+.logout-btn:hover {
+  background-color: #d32f2f;
+  border-color: #d32f2f;
 }
 
 @media (max-width: 768px) {

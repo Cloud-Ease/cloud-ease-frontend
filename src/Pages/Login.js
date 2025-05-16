@@ -43,6 +43,13 @@ function Login() {
       const token = await loginAndGetToken(formData.email, formData.password);
       console.log('Login başarılı, token alındı');
 
+      // Auth state event yayınla
+      const authEvent = new CustomEvent('authStateChanged', {
+        detail: { isAuthenticated: true },
+      });
+      window.dispatchEvent(authEvent);
+      console.log('Auth state event yayınlandı');
+
       // Başarılı giriş → doğrudan yönlendir
       console.log("Dashboard'a yönlendiriliyor...");
       // navigate('/dashboard-demo');
@@ -103,9 +110,8 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-header">
-        <Navbar showAuthButtons={false} />
         <button className="back-to-home" onClick={() => navigate('/')} aria-label="Ana sayfaya dön">
-          <i className="fas fa-arrow-left"></i> Ana Sayfa
+          <i className="fas fa-arrow-left"></i> Ana Sayfaya Dön
         </button>
       </div>
       <div className="login-form-container">

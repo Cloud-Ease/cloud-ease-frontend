@@ -78,7 +78,7 @@ function App() {
   // Login/Signup sayfasına yönlendirme - kullanıcı giriş yapmışsa dashboard'a yönlendir
   const AuthRoute = ({ children }) => {
     if (isAuthenticated) {
-      return <Navigate to="/dashboard-demo" replace />;
+      return <Navigate to="/dashboard" replace />;
     }
     return children;
   };
@@ -87,10 +87,7 @@ function App() {
     <Router>
       <div className="app-container">
         <Routes>
-          <Route
-            path="/"
-            element={isAuthenticated ? <Navigate to="/dashboard-demo" /> : <Homepage />}
-          />
+          <Route path="/" element={<Homepage />} />
           <Route
             path="/login"
             element={
@@ -120,14 +117,6 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/dashboard-demo"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
               </ProtectedRoute>
             }
           />

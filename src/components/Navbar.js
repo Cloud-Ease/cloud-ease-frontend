@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import '../CSS/Navbar.css';
 import { logout } from '../firebase';
 
-function Navbar({ showAuthButtons = true }) {
+function Navbar({ showAuthButtons = true, showHomeButton = false }) {
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -50,12 +50,17 @@ function Navbar({ showAuthButtons = true }) {
 
   const handleLogoClick = () => {
     if (isLoggedIn) {
-      console.log('Logo clicked, user is logged in, navigating to /dashboard-demo');
-      navigate('/dashboard-demo');
+      console.log('Logo clicked, user is logged in, navigating to /dashboard');
+      navigate('/dashboard');
     } else {
       console.log('Logo clicked, navigating to /');
       navigate('/');
     }
+  };
+
+  const handleHomeClick = () => {
+    console.log('Home button clicked, navigating to /');
+    navigate('/');
   };
 
   const handleProfileClick = () => {
@@ -130,6 +135,13 @@ function Navbar({ showAuthButtons = true }) {
               </button>
             </>
           )}
+        </div>
+      )}
+      {showHomeButton && (
+        <div className="auth-buttons">
+          <button className="home-btn" onClick={handleHomeClick} type="button">
+            Anasayfaya Dön
+          </button>
         </div>
       )}
     </nav>
