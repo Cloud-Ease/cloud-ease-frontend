@@ -7,6 +7,7 @@ import SocialLoginButtons from '../components/SocialLoginButtons';
 import BenefitsList from '../components/BenefitsList';
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
 import { register } from '../firebase';
+import { getAuth } from 'firebase/auth';
 
 function SignIn() {
   const navigate = useNavigate();
@@ -103,24 +104,98 @@ function SignIn() {
     try {
       // Firebase'den gelen token'ı alıyoruz
       const token = await register(formData.email, formData.password);
+      console.log('Firebase token alındı:', token ? 'Token var' : 'Token yok');
+      console.log('Token uzunluğu:', token ? token.length : 0);
+      console.log('Token başlangıç:', token ? token.substring(0, 20) + '...' : 'Yok');
 
-      // 🔐 Token'ı localStorage'a kaydediyoruz
+      // Token'ı localStorage'a kaydediyoruz
       localStorage.setItem('token', token);
+      console.log("Token localStorage'a kaydedildi");
 
-      // İstersen backend'e istek atabilirsin (örnek)
-      /*
-    await fetch("https://localhost:5001/api/file", {
-      headers: {
-        Authorization: `Bearer ${token}`
+      // Auth state event yayınla
+      const authEvent = new CustomEvent('authStateChanged', {
+        detail: { isAuthenticated: true },
+      });
+      window.dispatchEvent(authEvent);
+      console.log('Auth state event yayınlandı');
+
+      // Profil oluştur
+      const auth = getAuth();
+      if (auth.currentUser) {
+        try {
+          // Ad ve soyadı ayır
+          const nameParts = formData.fullName.split(' ');
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts.slice(1).join(' ') || '';
+
+          // Backende gönderilecek veriyi tam olarak backend DTO'ya göre hazırla
+          // ProfileCreateDto { FirstName, LastName, Phone, AvatarUrl, Email }
+          const profileData = {
+            UserId: auth.currentUser.uid,
+            FirstName: firstName,
+            LastName: lastName,
+            Email: formData.email,
+            Phone: '',
+            AvatarUrl: '',
+          };
+
+          console.log('Profil oluşturma verisi:', profileData);
+          console.log('JSON olarak:', JSON.stringify(profileData, null, 2));
+
+          // Backend'e profil oluşturma isteği gönder
+          const response = await fetch('https://localhost:7241/api/profile', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify(profileData),
+          });
+
+          if (!response.ok) {
+            let errorMessage = '';
+            try {
+              const errorData = await response.json();
+              errorMessage = JSON.stringify(errorData);
+            } catch (e) {
+              // Eğer JSON olarak parse edilemezse, text olarak al
+              errorMessage = await response.text();
+            }
+
+            console.error(`Profil oluşturulurken hata: ${response.status}`, errorMessage);
+            console.error('Request Headers:', {
+              Authorization: `Bearer ${token.substring(0, 10)}...`,
+              'Content-Type': 'application/json',
+            });
+            console.error('Request Body:', JSON.stringify(profileData));
+            throw new Error(`Profil oluşturulurken hata: ${response.status} - ${errorMessage}`);
+          }
+
+          const responseData = await response.json();
+          console.log('Oluşturulan profil yanıtı:', responseData);
+          console.log('JSON olarak yanıt:', JSON.stringify(responseData, null, 2));
+          console.log('Profil başarıyla oluşturuldu');
+        } catch (profileError) {
+          console.error('Profil oluşturma hatası:', profileError);
+          // Profil oluşturmada hata olsa bile devam ediyoruz
+        }
       }
-    });
-    */
 
-      navigate('/dashboard'); // başarılı kayıt sonrası yönlendirme
+      // Token kaydedildiğinden emin olmak için kontrol et
+      setTimeout(() => {
+        if (localStorage.getItem('token')) {
+          console.log("Token başarıyla kaydedildi, dashboard'a yönlendiriliyor...");
+          window.location.href = '/dashboard-demo'; // URL'yi doğrudan değiştir
+        } else {
+          console.error('Token kaydedilemedi!');
+          setSignupError('Kayıt işlemi tamamlanamadı. Lütfen tekrar deneyin.');
+          setIsLoading(false);
+        }
+      }, 100);
     } catch (error) {
       console.error(error);
       setSignupError('Kayıt başarısız: ' + error.message);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -131,7 +206,29 @@ function SignIn() {
 
     // Simulate social signup with timeout
     setTimeout(() => {
-      navigate('/dashboard-demo'); // Gerçek uygulamada /dashboard olacak
+      try {
+        // Simüle edilmiş token
+        const simulatedToken =
+          'simulated_social_token_' + Math.random().toString(36).substring(2, 15);
+
+        // Token'ı localStorage'a kaydet
+        localStorage.setItem('token', simulatedToken);
+
+        // Auth state event yayınla
+        const authEvent = new CustomEvent('authStateChanged', {
+          detail: { isAuthenticated: true },
+        });
+        window.dispatchEvent(authEvent);
+        console.log('Auth state event yayınlandı');
+
+        console.log("Sosyal kayıt başarılı, token kaydedildi, dashboard'a yönlendiriliyor...");
+
+        window.location.href = '/dashboard-demo'; // URL'yi doğrudan değiştir
+      } catch (error) {
+        console.error('Sosyal kayıt hatası:', error);
+        setSignupError('Sosyal kayıt işlemi başarısız oldu. Lütfen tekrar deneyin.');
+        setIsLoading(false);
+      }
     }, 1000);
   };
 
@@ -145,9 +242,8 @@ function SignIn() {
   return (
     <div className="signin-container">
       <div className="signin-header">
-        <Navbar showAuthButtons={false} />
         <button className="back-to-home" onClick={() => navigate('/')} aria-label="Ana sayfaya dön">
-          <i className="fas fa-arrow-left"></i> Ana Sayfa
+          <i className="fas fa-arrow-left"></i> Ana Sayfaya Dön
         </button>
       </div>
       <div className="signin-form-container">

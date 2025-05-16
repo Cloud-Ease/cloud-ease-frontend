@@ -29,7 +29,7 @@ function Homepage() {
   return (
     <div className="home-container">
       <header className="header">
-        <Navbar />
+        <Navbar showAuthButtons={true} />
         <div className="hero">
           <h1>Bulut Çözümlerinde Yeni Nesil Platform</h1>
           <p>

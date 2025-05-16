@@ -1,5 +1,5 @@
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
+import { auth, loginAndGetToken } from '../firebase';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../CSS/Login.css';
@@ -37,25 +37,28 @@ function Login() {
     setLoginError('');
 
     try {
-      // 🔐 Firebase ile giriş yap
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        formData.email,
-        formData.password
-      );
+      console.log('Login başlatılıyor...');
 
-      // 🔑 Firebase token al
-      const token = await userCredential.user.getIdToken();
+      // Firebase login fonksiyonunu çağır
+      const token = await loginAndGetToken(formData.email, formData.password);
+      console.log('Login başarılı, token alındı');
 
-      // ✅ İstersen token'ı localStorage'a kaydet (isteğe bağlı)
-      localStorage.setItem('token', token);
+      // Auth state event yayınla
+      const authEvent = new CustomEvent('authStateChanged', {
+        detail: { isAuthenticated: true },
+      });
+      window.dispatchEvent(authEvent);
+      console.log('Auth state event yayınlandı');
 
-      // ✅ Başarılı giriş → yönlendir
-      navigate('/dashboard-demo');
+      // Başarılı giriş → doğrudan yönlendir
+      console.log("Dashboard'a yönlendiriliyor...");
+      // navigate('/dashboard-demo');
+
+      // Doğrudan URL değiştirme
+      window.location.href = '/dashboard-demo';
     } catch (error) {
       console.error('Giriş hatası:', error.message);
       setLoginError('E-posta veya şifre hatalı ya da bağlantı hatası.');
-    } finally {
       setIsLoading(false);
     }
   };
@@ -66,8 +69,34 @@ function Login() {
 
     // Simulate social login with timeout
     setTimeout(() => {
-      // Redirect to dashboard after "successful" social login
-      navigate('/dashboard-demo');
+      try {
+        // Simüle edilmiş token
+        const simulatedToken =
+          'simulated_social_token_' + Math.random().toString(36).substring(2, 15);
+
+        // Token'ı localStorage'a kaydet
+        localStorage.setItem('token', simulatedToken);
+        console.log('Sosyal giriş başarılı, token kaydedildi');
+
+        // Auth state event yayınla
+        const authEvent = new CustomEvent('authStateChanged', {
+          detail: { isAuthenticated: true },
+        });
+        window.dispatchEvent(authEvent);
+        console.log('Auth state event yayınlandı');
+
+        // Redirect to dashboard after "successful" social login
+        console.log("Dashboard'a yönlendiriliyor...");
+
+        // setIsLoading(false); // Burayı kaldıralım, yönlendirme yapılacak
+
+        // navigate fonksiyonunu doğrudan çağıralım
+        window.location.href = '/dashboard-demo'; // Doğrudan URL değiştirme
+      } catch (error) {
+        console.error('Sosyal giriş hatası:', error);
+        setLoginError('Sosyal giriş sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+        setIsLoading(false);
+      }
     }, 1000);
   };
 
@@ -81,9 +110,8 @@ function Login() {
   return (
     <div className="login-container">
       <div className="login-header">
-        <Navbar showAuthButtons={false} />
         <button className="back-to-home" onClick={() => navigate('/')} aria-label="Ana sayfaya dön">
-          <i className="fas fa-arrow-left"></i> Ana Sayfa
+          <i className="fas fa-arrow-left"></i> Ana Sayfaya Dön
         </button>
       </div>
       <div className="login-form-container">

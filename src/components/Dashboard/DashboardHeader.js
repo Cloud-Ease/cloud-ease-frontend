@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Dashboard/DashboardHeader.css';
+import { logout } from '../../firebase'; // Firebase logout fonksiyonunu import et
+import { getAuth } from 'firebase/auth';
 
 // .NET API entegrasyon noktaları
 // const API_BASE_URL = 'https://api.example.com/api';
@@ -14,6 +16,7 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
   const fileInputRef = useRef(null);
 
   // .NET backend'den kategorileri çekme
@@ -61,6 +64,38 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
     { id: 'other', name: 'Diğer' },
   ];
 
+  // Firebase'den kullanıcı bilgilerini al
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+
+    if (user) {
+      // Kullanıcı bilgilerini state'e kaydet
+      setUserInfo({
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        uid: user.uid,
+      });
+
+      // Kullanıcı adından initials oluştur
+      const names = (user.displayName || '').split(' ');
+      const initials =
+        names.length > 0
+          ? names
+              .map((name) => name.charAt(0))
+              .join('')
+              .toUpperCase()
+              .substring(0, 2)
+          : 'KK';
+
+      setUserInfo((prev) => ({
+        ...prev,
+        initials,
+      }));
+    }
+  }, []);
+
   const handleCategoryClick = (categoryId) => {
     setActiveCategory(categoryId);
     onCategoryChange(categoryId);
@@ -75,45 +110,27 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
     onSearch(searchTerm);
   };
 
-  const handleLogout = () => {
-    // .NET backend'e logout isteği
-    // async function logoutUser() {
-    //   try {
-    //     // Kullanıcı jetonu (token) ile birlikte isteği gönder
-    //     const token = localStorage.getItem('authToken');
-    //     const response = await fetch(LOGOUT_ENDPOINT, {
-    //       method: 'POST',
-    //       headers: {
-    //         'Authorization': `Bearer ${token}`,
-    //         'Content-Type': 'application/json'
-    //       }
-    //     });
-    //
-    //     if (!response.ok) {
-    //       throw new Error('Çıkış yapılırken bir hata oluştu');
-    //     }
-    //
-    //     // Jetonları ve kullanıcı bilgilerini temizle
-    //     localStorage.removeItem('authToken');
-    //     localStorage.removeItem('refreshToken');
-    //     localStorage.removeItem('userInfo');
-    //
-    //     // Giriş sayfasına yönlendir
-    //     navigate('/login');
-    //   } catch (error) {
-    //     console.error('Çıkış yapılırken hata:', error);
-    //     // Hata durumunda da en azından yerel depolamayı temizle ve giriş sayfasına yönlendir
-    //     localStorage.removeItem('authToken');
-    //     localStorage.removeItem('refreshToken');
-    //     localStorage.removeItem('userInfo');
-    //     navigate('/login');
-    //   }
-    // }
-    //
-    // logoutUser();
+  const handleLogout = async () => {
+    console.log('Dashboard header: logout butonu tıklandı');
 
-    // Geçici olarak sadece yönlendirme yapacağız
-    navigate('/login');
+    try {
+      // Firebase logout fonksiyonunu çağır
+      const success = await logout();
+      console.log('Firebase logout sonucu:', success ? 'Başarılı' : 'Başarısız');
+
+      // Token'ı manuel olarak temizle
+      localStorage.removeItem('token');
+      console.log("Token localStorage'dan temizlendi");
+
+      // Login sayfasına yönlendir
+      navigate('/login');
+    } catch (error) {
+      console.error('Çıkış yapma hatası:', error);
+
+      // Hata olsa bile token'ı temizle ve login sayfasına yönlendir
+      localStorage.removeItem('token');
+      navigate('/login');
+    }
   };
 
   const handleUserMenuToggle = () => {
@@ -226,16 +243,26 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
           </button>
           <div className="user-menu">
             <div className="user-avatar" onClick={handleUserMenuToggle}>
-              {/* Burada kullanıcı avatarı gösterilecek */}
-              {/* userInfo && userInfo.avatar ? <img src={userInfo.avatar} alt="User" /> : <span>{userInfo ? userInfo.initials : 'KK'}</span> */}
-              <span>KK</span>
+              {userInfo && userInfo.photoURL ? (
+                <img src={userInfo.photoURL} alt={userInfo.displayName || 'User'} />
+              ) : (
+                <span>{userInfo ? userInfo.initials : 'KK'}</span>
+              )}
             </div>
             {showUserDropdown && (
               <div className="user-dropdown">
                 <ul>
-                  <li><a onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>Profil</a></li>
-                  <li><a href="#settings">Ayarlar</a></li>
-                  <li><button onClick={handleLogout}>Çıkış</button></li>
+                  <li>
+                    <a onClick={() => navigate('/profile')} style={{ cursor: 'pointer' }}>
+                      Profil
+                    </a>
+                  </li>
+                  <li>
+                    <a href="#settings">Ayarlar</a>
+                  </li>
+                  <li>
+                    <button onClick={handleLogout}>Çıkış</button>
+                  </li>
                 </ul>
               </div>
             )}
