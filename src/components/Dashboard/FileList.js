@@ -1,37 +1,95 @@
-import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import '../../CSS/Dashboard/FileList.css';
+
+// contentType'dan fileType elde etme fonksiyonu
+function getFileTypeFromContentType(contentType) {
+  if (contentType.startsWith('image/')) {
+    return 'photos';
+  } else if (contentType.startsWith('audio/')) {
+    return 'music';
+  } else if (contentType.startsWith('video/')) {
+    return 'videos';
+  } else if (
+    contentType.includes('pdf') ||
+    contentType.includes('document') ||
+    contentType.includes('text/') ||
+    contentType.includes('spreadsheet') ||
+    contentType.includes('presentation')
+  ) {
+    return 'documents';
+  } else {
+    return 'other';
+  }
+}
+
+// Dosya boyutunu okunabilir formata çevirme
+function formatSizeToReadable(bytes) {
+  if (bytes === 0 || bytes === undefined) return '0 B';
+
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+
+  return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + ' ' + sizes[i];
+}
 
 function getFileIcon(type) {
   switch (type) {
-    case 'image':
+    case 'photos':
       return 'far fa-file-image';
-    case 'document':
+    case 'documents':
       return 'far fa-file-alt';
-    case 'audio':
+    case 'music':
       return 'far fa-file-audio';
-    case 'video':
+    case 'videos':
       return 'far fa-file-video';
     default:
       return 'far fa-file';
   }
 }
 
-function FileList() {
-  const [files, setFiles] = useState([]);
-  const [loading, setLoading] = useState(true);
+function FileList({
+  files = [],
+  loading,
+  currentPage,
+  totalPages,
+  onPageChange,
+  onFileDelete,
+  selectedCategory,
+  searchQuery,
+}) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [sortOrder, setSortOrder] = useState('name-asc');
-  const [selectedUploadFile, setSelectedUploadFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [deletingFiles, setDeletingFiles] = useState([]);
+  const [notification, setNotification] = useState(null);
+  const [localFiles, setLocalFiles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Bildirim gösterme fonksiyonu
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+
+    // 3 saniye sonra bildirimi kaldır
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
+  };
+
+  // Bildirim göründüğünde otomatik olarak kaldırma
   useEffect(() => {
-    fetchFiles();
-  }, []);
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 3000);
 
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  // API'den dosyaları çek
   const fetchFiles = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:5212/api/File', {
         withCredentials: true,
@@ -40,16 +98,45 @@ function FileList() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setFiles(response.data);
+
+      // API'den gelen dosyalara fileType alanını ekleyelim
+      const filesWithType = response.data.map((file) => {
+        return {
+          ...file,
+          fileType: getFileTypeFromContentType(file.contentType),
+          // size bilgisi yoksa varsayılan değer ekleyelim
+          size: file.size || 0,
+        };
+      });
+
+      setLocalFiles(filesWithType);
     } catch (error) {
       console.error('Dosyalar alınırken hata oluştu:', error);
+      showNotification('Dosyalar yüklenirken bir hata oluştu.', 'error');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  // Sayfa yüklendiğinde dosyaları çek
+  useEffect(() => {
+    fetchFiles();
+
+    // Dosya yükleme olayını dinle
+    const handleFileUploaded = () => {
+      fetchFiles();
+    };
+
+    window.addEventListener('fileUploaded', handleFileUploaded);
+
+    // Temizleme fonksiyonu
+    return () => {
+      window.removeEventListener('fileUploaded', handleFileUploaded);
+    };
+  }, []);
+
   const toggleFileSelection = (fileId) => {
-    const fileObj = files.find((file) => file.id === fileId);
+    const fileObj = localFiles.find((file) => file.id === fileId);
     if (!fileObj) return;
 
     const alreadySelected = selectedFiles.some((f) => f.id === fileId);
@@ -61,37 +148,47 @@ function FileList() {
   };
 
   const toggleSelectAll = () => {
-    if (selectedFiles.length === files.length && files.length > 0) {
+    if (selectedFiles.length === localFiles.length && localFiles.length > 0) {
       setSelectedFiles([]);
     } else {
-      setSelectedFiles(files);
+      setSelectedFiles([...localFiles]);
     }
   };
 
   const handleSortChange = (e) => setSortOrder(e.target.value);
 
-  const sortedFiles = [...files].sort((a, b) => {
+  // API'den filtrelenmiş dosyaları alalım
+  const filteredFiles = localFiles.filter((file) => {
+    // Kategori filtresi
+    const categoryMatch = selectedCategory === 'all' || file.fileType === selectedCategory;
+
+    // Arama filtresi
+    const searchMatch =
+      !searchQuery || file.fileName.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return categoryMatch && searchMatch;
+  });
+
+  // sortedFiles artık filteredFiles'ı sıralasın
+  const sortedFiles = [...filteredFiles].sort((a, b) => {
     const [field, order] = sortOrder.split('-');
 
-    const getSafeValue = (obj, key) => {
-      return obj?.[key] ?? '';
-    };
-
     if (field === 'name') {
-      const aName = getSafeValue(a, 'fileName');
-      const bName = getSafeValue(b, 'fileName');
-      return order === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
+      return order === 'asc'
+        ? a.fileName.localeCompare(b.fileName)
+        : b.fileName.localeCompare(a.fileName);
     }
 
     if (field === 'date') {
-      const aDate = new Date(getSafeValue(a, 'uploadedAt'));
-      const bDate = new Date(getSafeValue(b, 'uploadedAt'));
+      const aDate = new Date(a.uploadedAt);
+      const bDate = new Date(b.uploadedAt);
       return order === 'asc' ? aDate - bDate : bDate - aDate;
     }
 
     if (field === 'size') {
-      const aSize = getSafeValue(a, 'size');
-      const bSize = getSafeValue(b, 'size');
+      // Extract numeric value from size string
+      const aSize = a.size;
+      const bSize = b.size;
       return order === 'asc' ? aSize - bSize : bSize - aSize;
     }
 
@@ -108,6 +205,7 @@ function FileList() {
           Authorization: `Bearer ${token}`,
         },
       });
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -115,13 +213,23 @@ function FileList() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+
+      // İndirme başarılı bildirimi
+      showNotification(`${fileName} indirildi.`);
     } catch (error) {
-      alert('Dosya indirilemedi.');
+      console.error('Dosya indirme hatası:', error);
+      showNotification('Dosya indirilemedi.', 'error');
     }
   };
 
   const handleDeleteFile = async (fileId) => {
     try {
+      setDeletingFiles((prev) => [...prev, fileId]);
+
+      // Silinen dosyanın adını sakla
+      const fileName = localFiles.find((f) => f.id === fileId)?.fileName || '';
+
+      // Backend'e silme isteği gönder
       const token = localStorage.getItem('token');
       await axios.delete(`http://localhost:5212/api/File/${fileId}`, {
         withCredentials: true,
@@ -129,23 +237,30 @@ function FileList() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setFiles(files.filter((f) => f.id !== fileId));
-      setSelectedFiles(selectedFiles.filter((f) => f.id !== fileId));
+
+      // UI güncellemesi
+      setLocalFiles((prevFiles) => prevFiles.filter((file) => file.id !== fileId));
+      setDeletingFiles((prev) => prev.filter((id) => id !== fileId));
+      setSelectedFiles((prev) => prev.filter((f) => f.id !== fileId));
+
+      // Başarı bildirimi göster
+      showNotification(`${fileName} silindi.`);
     } catch (error) {
-      alert('Dosya silinemedi.');
+      console.error('Dosya silme hatası:', error);
+      setDeletingFiles((prev) => prev.filter((id) => id !== fileId));
+      showNotification('Dosya silinemedi.', 'error');
     }
   };
 
   const handleBatchDownload = async () => {
     if (selectedFiles.length === 0) {
-      alert('İndirilecek dosya seçilmedi.');
       return;
     }
 
-    const token = localStorage.getItem('token');
-
+    let successCount = 0;
     for (const file of selectedFiles) {
       try {
+        const token = localStorage.getItem('token');
         const response = await axios.get(`http://localhost:5212/api/File/download/${file.id}`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -164,70 +279,77 @@ function FileList() {
         link.remove();
 
         window.URL.revokeObjectURL(url);
+        successCount++;
       } catch (error) {
         console.error(`Dosya indirilemedi (${file.fileName}):`, error);
       }
     }
 
-    alert(`${selectedFiles.length} dosya indirildi.`);
+    if (successCount > 0) {
+      showNotification(`${successCount} dosya indirildi.`);
+    } else {
+      showNotification('Dosyalar indirilemedi.', 'error');
+    }
   };
 
   const handleBatchDelete = async () => {
-    for (const file of selectedFiles) {
-      await handleDeleteFile(file.id);
-    }
-    setSelectedFiles([]);
-  };
-
-  const handleFileChange = (e) => {
-    setSelectedUploadFile(e.target.files[0]);
-  };
-
-  const handleFileUpload = async () => {
-    if (!selectedUploadFile) {
-      alert('Lütfen yüklemek için bir dosya seçin.');
+    if (selectedFiles.length === 0) {
       return;
     }
-    try {
-      setUploading(true);
-      const formData = new FormData();
-      formData.append('file', selectedUploadFile);
 
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5212/api/File/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      });
+    const fileIds = selectedFiles.map((file) => file.id);
+    const count = fileIds.length;
+    let successCount = 0;
 
-      alert('Dosya başarıyla yüklendi.');
-      setSelectedUploadFile(null);
-      fetchFiles();
-    } catch (error) {
-      alert('Dosya yüklenirken hata oluştu.');
-      console.error(error);
-    } finally {
-      setUploading(false);
+    setDeletingFiles((prev) => [...prev, ...fileIds]);
+
+    for (const id of fileIds) {
+      try {
+        // Backend'e silme isteği gönder
+        const token = localStorage.getItem('token');
+        await axios.delete(`http://localhost:5212/api/File/${id}`, {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        successCount++;
+      } catch (error) {
+        console.error(`Dosya silinemedi (ID: ${id}):`, error);
+      }
+    }
+
+    // Dosyaları yeniden yükle
+    fetchFiles();
+
+    // UI güncellemesi
+    setDeletingFiles([]);
+    setSelectedFiles([]);
+
+    // Başarı bildirimi göster
+    if (successCount > 0) {
+      showNotification(`${successCount} dosya silindi.`);
+    } else {
+      showNotification('Dosyalar silinemedi.', 'error');
     }
   };
 
   return (
     <div className="file-list-container">
-      <div className="upload-section">
-        <input type="file" onChange={handleFileChange} />
-        <button onClick={handleFileUpload} disabled={uploading}>
-          {uploading ? 'Yükleniyor...' : 'Dosya Yükle'}
-        </button>
-      </div>
+      {notification && (
+        <div className={`notification-toast ${notification.type}`}>
+          {notification.type === 'success' && <i className="fas fa-check-circle"></i>}
+          {notification.type === 'error' && <i className="fas fa-exclamation-circle"></i>}
+          {notification.message}
+        </div>
+      )}
 
       <div className="file-list-header">
         <div className="file-list-actions">
           <div className="select-all">
             <input
               type="checkbox"
-              checked={selectedFiles.length === files.length && files.length > 0}
+              checked={selectedFiles.length === localFiles.length && localFiles.length > 0}
               onChange={toggleSelectAll}
               id="select-all-checkbox"
             />
@@ -238,8 +360,20 @@ function FileList() {
               <button className="download-btn" onClick={handleBatchDownload}>
                 <i className="fas fa-download"></i> İndir
               </button>
-              <button className="delete-btn" onClick={handleBatchDelete}>
-                <i className="fas fa-trash-alt"></i> Sil
+              <button
+                className="delete-btn"
+                onClick={handleBatchDelete}
+                disabled={deletingFiles.length > 0}
+              >
+                {deletingFiles.length > 0 ? (
+                  <>
+                    <i className="fas fa-spinner fa-spin"></i> Siliniyor...
+                  </>
+                ) : (
+                  <>
+                    <i className="fas fa-trash-alt"></i> Sil
+                  </>
+                )}
               </button>
             </div>
           )}
@@ -257,12 +391,12 @@ function FileList() {
         </div>
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="loading-files">
           <i className="fas fa-spinner fa-spin"></i>
           <p>Dosyalar yükleniyor...</p>
         </div>
-      ) : files.length === 0 ? (
+      ) : localFiles.length === 0 ? (
         <div className="no-files">
           <i className="far fa-folder-open"></i>
           <p>Hiç dosya bulunamadı.</p>
@@ -286,13 +420,14 @@ function FileList() {
                 />
               </div>
               <div className="file-icon">
-                <i className={getFileIcon(file.type)}></i>
+                <i className={getFileIcon(file.fileType || 'other')}></i>
               </div>
               <div className="file-info">
                 <div className="file-name" title={file.fileName}>
                   {file.fileName}
                 </div>
                 <div className="file-meta">
+                  <span className="file-size">{formatSizeToReadable(file.size)}</span>
                   <span className="file-date">
                     {new Date(file.uploadedAt).toLocaleDateString()}
                   </span>
@@ -316,12 +451,34 @@ function FileList() {
                     e.stopPropagation();
                     handleDeleteFile(file.id);
                   }}
+                  disabled={deletingFiles.includes(file.id)}
                 >
-                  <i className="fas fa-trash-alt"></i>
+                  {deletingFiles.includes(file.id) ? (
+                    <i className="fas fa-spinner fa-spin"></i>
+                  ) : (
+                    <i className="fas fa-trash-alt"></i>
+                  )}
                 </button>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}>
+            <i className="fas fa-chevron-left"></i>
+          </button>
+          <span className="page-info">
+            Sayfa {currentPage} / {totalPages}
+          </span>
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            <i className="fas fa-chevron-right"></i>
+          </button>
         </div>
       )}
     </div>

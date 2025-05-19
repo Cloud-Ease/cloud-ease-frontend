@@ -13,16 +13,16 @@ Coded by www.creative-tim.com
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 */
 
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import './CSS/App.css';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
 // Pages
+import Dashboard from './Pages/Dashboard';
 import Homepage from './Pages/Homepage';
 import Login from './Pages/Login';
-import SignIn from './Pages/SignIn';
-import Dashboard from './Pages/Dashboard';
 import Profile from './Pages/Profile';
+import SignIn from './Pages/SignIn';
 
 function App() {
   // Token'a göre kimlik doğrulama durumunu belirle
@@ -117,6 +117,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard-demo"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
               </ProtectedRoute>
             }
           />
