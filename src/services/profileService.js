@@ -3,7 +3,7 @@ import { getAuth } from 'firebase/auth';
 import { convertBackendProfileToFrontend, convertFrontendProfileToBackend } from './profileUtils';
 
 // API URL - backend controller'a göre doğru yol
-const API_URL = 'https://localhost:7241/api/profile';
+const API_URL = 'http://localhost:5212/api/profile';
 
 // Axios instance oluştur
 const axiosInstance = axios.create({

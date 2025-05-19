@@ -3,8 +3,8 @@ import FileCard from './FileCard';
 import '../../CSS/Dashboard/FilesSection.css';
 
 // .NET API entegrasyon noktaları
-// const API_BASE_URL = 'https://api.example.com/api';
-// const FILES_ENDPOINT = `${API_BASE_URL}/files`;
+const API_BASE_URL = 'https://localhost:5001/api';
+const FILES_ENDPOINT = `${API_BASE_URL}/file`;
 // const SEARCH_ENDPOINT = `${API_BASE_URL}/files/search`;
 // const FILTER_ENDPOINT = `${API_BASE_URL}/files/filter`;
 
@@ -17,56 +17,49 @@ function FilesSection() {
 
   // Dosyaları .NET backend'den yükleme
   useEffect(() => {
-    // API'dan dosyaları yükleme
-    // async function fetchFiles() {
-    //   try {
-    //     setLoading(true);
-    //     const token = localStorage.getItem('authToken');
-    //
-    //     // API endpoint'ini yapılandır
-    //     let endpoint = FILES_ENDPOINT;
-    //
-    //     // Filtreleme ve sıralama parametreleri ekle
-    //     const params = new URLSearchParams();
-    //
-    //     if (filterCategory !== 'all') {
-    //       params.append('category', filterCategory);
-    //     }
-    //
-    //     if (searchTerm) {
-    //       params.append('search', searchTerm);
-    //     }
-    //
-    //     params.append('sortBy', sortBy);
-    //
-    //     // Parametreler varsa ekle
-    //     if (params.toString()) {
-    //       endpoint = `${endpoint}?${params.toString()}`;
-    //     }
-    //
-    //     const response = await fetch(endpoint, {
-    //       headers: {
-    //         'Authorization': `Bearer ${token}`
-    //       }
-    //     });
-    //
-    //     if (!response.ok) {
-    //       throw new Error('Dosyalar yüklenemedi');
-    //     }
-    //
-    //     const data = await response.json();
-    //     setFiles(data);
-    //   } catch (error) {
-    //     console.error('Dosya yükleme hatası:', error);
-    //     // Hata durumunda boş dizi göster
-    //     setFiles([]);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // }
-    //
-    // fetchFiles();
+    async function fetchFiles() {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('authToken'); // Firebase veya başka token
 
+        const params = new URLSearchParams();
+
+        if (filterCategory !== 'all') {
+          params.append('category', filterCategory);
+        }
+
+        if (searchTerm) {
+          params.append('search', searchTerm);
+        }
+
+        params.append('sortBy', sortBy);
+
+        let endpoint = FILES_ENDPOINT;
+        if (params.toString()) {
+          endpoint += `?${params.toString()}`;
+        }
+
+        const response = await fetch(endpoint, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Dosyalar yüklenemedi');
+        }
+
+        const data = await response.json();
+        setFiles(data); // API'den gelen JSON dizisi
+      } catch (error) {
+        console.error('Dosya yükleme hatası:', error);
+        setFiles([]);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchFiles();
     // Geçici olarak örnek veri göster
     // Bu kısım backend entegrasyonu tamamlandığında kaldırılacak
     setTimeout(() => {
