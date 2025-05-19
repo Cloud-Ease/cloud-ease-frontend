@@ -3,7 +3,7 @@ import '../../CSS/Dashboard/UploadModal.css';
 
 // .NET API entegrasyon noktaları
 // const API_BASE_URL = 'https://api.example.com/api';
- const UPLOAD_ENDPOINT = 'http://localhost:5212/api/File/upload';
+const UPLOAD_ENDPOINT = 'http://localhost:5212/api/File/upload';
 // const FOLDER_UPLOAD_ENDPOINT = `${API_BASE_URL}/files/upload-folder`;
 
 function UploadModal({ isOpen, onClose, onUploadSuccess }) {
@@ -78,54 +78,54 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     setUploading(true);
 
     // .NET Backend entegrasyonu için dosya yükleme fonksiyonu
-     try {
-    const token = localStorage.getItem("authToken");
+    try {
+      const token = localStorage.getItem('authToken');
 
-    const uploadPromises = files.map((file) => {
-      const formData = new FormData();
-      formData.append("file", file); // DTO'daki isme uygun!
+      const uploadPromises = files.map((file) => {
+        const formData = new FormData();
+        formData.append('file', file); // DTO'daki isme uygun!
 
-      return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", "http://localhost:5212/api/File/upload", true);
-        if (token) {
-          xhr.setRequestHeader("Authorization", `Bearer ${token}`);
-        }
-
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const percentComplete = Math.round((event.loaded / event.total) * 100);
-            setUploadProgress((prev) => ({
-              ...prev,
-              [file.name]: percentComplete,
-            }));
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', 'http://localhost:5212/api/File/upload', true);
+          if (token) {
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
           }
-        };
 
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            resolve(xhr.response);
-          } else {
-            reject(new Error(`Dosya yükleme hatası: ${xhr.statusText}`));
-          }
-        };
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const percentComplete = Math.round((event.loaded / event.total) * 100);
+              setUploadProgress((prev) => ({
+                ...prev,
+                [file.name]: percentComplete,
+              }));
+            }
+          };
 
-        xhr.onerror = () => {
-          reject(new Error("Dosya yüklenirken ağ hatası oluştu"));
-        };
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(xhr.response);
+            } else {
+              reject(new Error(`Dosya yükleme hatası: ${xhr.statusText}`));
+            }
+          };
 
-        xhr.send(formData);
+          xhr.onerror = () => {
+            reject(new Error('Dosya yüklenirken ağ hatası oluştu'));
+          };
+
+          xhr.send(formData);
+        });
       });
-    });
 
-    await Promise.all(uploadPromises);
-    onUploadSuccess();
-    resetAndClose();
-  } catch (error) {
-    console.error("Yükleme hatası:", error);
-    setUploading(false);
-    alert("Dosya yükleme sırasında bir hata oluştu. Lütfen tekrar deneyin.");
-  }
+      await Promise.all(uploadPromises);
+      onUploadSuccess();
+      resetAndClose();
+    } catch (error) {
+      console.error('Yükleme hatası:', error);
+      setUploading(false);
+      alert('Dosya yükleme sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+    }
   };
 
   // Yükleme işlemini simüle et (Backend entegrasyonu tamamlanana kadar)

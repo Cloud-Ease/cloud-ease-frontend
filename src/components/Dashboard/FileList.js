@@ -17,7 +17,7 @@ function getFileIcon(type) {
   }
 }
 
-function FileList({ currentPage, totalPages, onPageChange }) {
+function FileList() {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState([]);
@@ -32,8 +32,13 @@ function FileList({ currentPage, totalPages, onPageChange }) {
   const fetchFiles = async () => {
     try {
       setLoading(true);
+      const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:5212/api/File', {
         withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
       });
       setFiles(response.data);
     } catch (error) {
@@ -44,10 +49,14 @@ function FileList({ currentPage, totalPages, onPageChange }) {
   };
 
   const toggleFileSelection = (fileId) => {
-    if (selectedFiles.includes(fileId)) {
-      setSelectedFiles(selectedFiles.filter((id) => id !== fileId));
+    const fileObj = files.find((file) => file.id === fileId);
+    if (!fileObj) return;
+
+    const alreadySelected = selectedFiles.some((f) => f.id === fileId);
+    if (alreadySelected) {
+      setSelectedFiles(selectedFiles.filter((f) => f.id !== fileId));
     } else {
-      setSelectedFiles([...selectedFiles, fileId]);
+      setSelectedFiles([...selectedFiles, fileObj]);
     }
   };
 
@@ -55,7 +64,7 @@ function FileList({ currentPage, totalPages, onPageChange }) {
     if (selectedFiles.length === files.length && files.length > 0) {
       setSelectedFiles([]);
     } else {
-      setSelectedFiles(files.map((file) => file.id));
+      setSelectedFiles(files);
     }
   };
 
@@ -63,21 +72,41 @@ function FileList({ currentPage, totalPages, onPageChange }) {
 
   const sortedFiles = [...files].sort((a, b) => {
     const [field, order] = sortOrder.split('-');
-    if (field === 'name')
-      return order === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
-    if (field === 'date')
-      return order === 'asc'
-        ? new Date(a.date) - new Date(b.date)
-        : new Date(b.date) - new Date(a.date);
-    if (field === 'size') return order === 'asc' ? a.size - b.size : b.size - a.size;
+
+    const getSafeValue = (obj, key) => {
+      return obj?.[key] ?? '';
+    };
+
+    if (field === 'name') {
+      const aName = getSafeValue(a, 'fileName');
+      const bName = getSafeValue(b, 'fileName');
+      return order === 'asc' ? aName.localeCompare(bName) : bName.localeCompare(aName);
+    }
+
+    if (field === 'date') {
+      const aDate = new Date(getSafeValue(a, 'uploadedAt'));
+      const bDate = new Date(getSafeValue(b, 'uploadedAt'));
+      return order === 'asc' ? aDate - bDate : bDate - aDate;
+    }
+
+    if (field === 'size') {
+      const aSize = getSafeValue(a, 'size');
+      const bSize = getSafeValue(b, 'size');
+      return order === 'asc' ? aSize - bSize : bSize - aSize;
+    }
+
     return 0;
   });
 
   const handleDownloadFile = async (fileId, fileName) => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`http://localhost:5212/api/File/download/${fileId}`, {
         responseType: 'blob',
         withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
@@ -93,28 +122,63 @@ function FileList({ currentPage, totalPages, onPageChange }) {
 
   const handleDeleteFile = async (fileId) => {
     try {
+      const token = localStorage.getItem('token');
       await axios.delete(`http://localhost:5212/api/File/${fileId}`, {
         withCredentials: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       setFiles(files.filter((f) => f.id !== fileId));
-      setSelectedFiles(selectedFiles.filter((id) => id !== fileId));
+      setSelectedFiles(selectedFiles.filter((f) => f.id !== fileId));
     } catch (error) {
       alert('Dosya silinemedi.');
     }
   };
 
-  const handleBatchDownload = () => {
-    alert(`${selectedFiles.length} dosya indirilecek (henüz çoklu indirme eklenmedi)`);
+  const handleBatchDownload = async () => {
+    if (selectedFiles.length === 0) {
+      alert('İndirilecek dosya seçilmedi.');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    for (const file of selectedFiles) {
+      try {
+        const response = await axios.get(`http://localhost:5212/api/File/download/${file.id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          responseType: 'blob',
+        });
+
+        const blob = new Blob([response.data]);
+        const url = window.URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', file.fileName || 'dosya');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error(`Dosya indirilemedi (${file.fileName}):`, error);
+      }
+    }
+
+    alert(`${selectedFiles.length} dosya indirildi.`);
   };
 
   const handleBatchDelete = async () => {
-    for (const fileId of selectedFiles) {
-      await handleDeleteFile(fileId);
+    for (const file of selectedFiles) {
+      await handleDeleteFile(file.id);
     }
     setSelectedFiles([]);
   };
 
-  // Yeni: Dosya seçme ve yükleme fonksiyonları
   const handleFileChange = (e) => {
     setSelectedUploadFile(e.target.files[0]);
   };
@@ -129,14 +193,18 @@ function FileList({ currentPage, totalPages, onPageChange }) {
       const formData = new FormData();
       formData.append('file', selectedUploadFile);
 
+      const token = localStorage.getItem('token');
       await axios.post('http://localhost:5212/api/File/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
         withCredentials: true,
       });
 
       alert('Dosya başarıyla yüklendi.');
       setSelectedUploadFile(null);
-      fetchFiles(); // Listeyi güncelle
+      fetchFiles();
     } catch (error) {
       alert('Dosya yüklenirken hata oluştu.');
       console.error(error);
@@ -147,7 +215,6 @@ function FileList({ currentPage, totalPages, onPageChange }) {
 
   return (
     <div className="file-list-container">
-      {/* Dosya yükleme alanı */}
       <div className="upload-section">
         <input type="file" onChange={handleFileChange} />
         <button onClick={handleFileUpload} disabled={uploading}>
@@ -155,7 +222,6 @@ function FileList({ currentPage, totalPages, onPageChange }) {
         </button>
       </div>
 
-      {/* Header ve sıralama */}
       <div className="file-list-header">
         <div className="file-list-actions">
           <div className="select-all">
@@ -191,7 +257,6 @@ function FileList({ currentPage, totalPages, onPageChange }) {
         </div>
       </div>
 
-      {/* Dosya listesi */}
       {loading ? (
         <div className="loading-files">
           <i className="fas fa-spinner fa-spin"></i>
@@ -207,13 +272,15 @@ function FileList({ currentPage, totalPages, onPageChange }) {
           {sortedFiles.map((file) => (
             <div
               key={file.id}
-              className={`file-item ${selectedFiles.includes(file.id) ? 'selected' : ''}`}
+              className={`file-item ${
+                selectedFiles.some((f) => f.id === file.id) ? 'selected' : ''
+              }`}
               onClick={() => toggleFileSelection(file.id)}
             >
               <div className="file-select">
                 <input
                   type="checkbox"
-                  checked={selectedFiles.includes(file.id)}
+                  checked={selectedFiles.some((f) => f.id === file.id)}
                   onChange={() => {}}
                   onClick={(e) => e.stopPropagation()}
                 />
@@ -222,12 +289,13 @@ function FileList({ currentPage, totalPages, onPageChange }) {
                 <i className={getFileIcon(file.type)}></i>
               </div>
               <div className="file-info">
-                <div className="file-name" title={file.name}>
-                  {file.name}
+                <div className="file-name" title={file.fileName}>
+                  {file.fileName}
                 </div>
                 <div className="file-meta">
-                  <span className="file-size">{file.size} KB</span>
-                  <span className="file-date">{new Date(file.date).toLocaleDateString()}</span>
+                  <span className="file-date">
+                    {new Date(file.uploadedAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
               <div className="file-actions">
@@ -236,7 +304,7 @@ function FileList({ currentPage, totalPages, onPageChange }) {
                   title="İndir"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleDownloadFile(file.id, file.name);
+                    handleDownloadFile(file.id, file.fileName);
                   }}
                 >
                   <i className="fas fa-download"></i>
