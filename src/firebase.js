@@ -1,9 +1,9 @@
 import { initializeApp } from 'firebase/app';
 import {
-  getAuth,
   createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
+  getAuth,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
 
@@ -84,23 +84,50 @@ setInterval(() => {
 }, 10 * 60 * 1000); // 10 dakikada bir kontrol et
 
 // Kullanıcı kaydetme fonksiyonu
-export const register = (email, password) => {
-  return createUserWithEmailAndPassword(auth, email, password)
-    .then(async (userCredential) => {
-      const user = userCredential.user;
-      console.log('User registered: ', user);
+export const register = async (email, password) => {
+  try {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    const user = userCredential.user;
+    console.log('User registered in Firebase: ', user);
 
-      const token = await user.getIdToken();
-      // Token'ı localStorage'a kaydet
-      localStorage.setItem('token', token);
-      return token;
-    })
-    .catch((error) => {
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      console.error('Error registering user: ', errorCode, errorMessage);
-      throw new Error(errorMessage);
-    });
+    const token = await user.getIdToken();
+    // Token'ı localStorage'a kaydet
+    localStorage.setItem('token', token);
+
+    // Backend'e kullanıcı kaydını yap
+    try {
+      const backendResponse = await fetch('http://localhost:5212/api/Profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || '',
+          photoURL: user.photoURL || '',
+        }),
+      });
+
+      if (!backendResponse.ok) {
+        console.error('Backend registration failed:', backendResponse.status);
+        // Firebase kaydı başarılı olduğu için token'ı yine de dön
+      } else {
+        console.log('Backend registration successful');
+      }
+    } catch (backendError) {
+      console.error('Backend registration error:', backendError);
+      // Firebase kaydı başarılı olduğu için token'ı yine de dön
+    }
+
+    return token;
+  } catch (error) {
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    console.error('Error registering user: ', errorCode, errorMessage);
+    throw new Error(errorMessage);
+  }
 };
 
 // Kullanıcı giriş yapıp token almak için fonksiyon
@@ -108,12 +135,38 @@ export const loginAndGetToken = async (email, password) => {
   console.log('Firebase login başlatıldı');
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const token = await userCredential.user.getIdToken();
-    console.log('Token alındı');
+    const user = userCredential.user;
+    const token = await user.getIdToken();
+    console.log('Firebase token alındı');
 
     // Token'ı localStorage'a kaydet
     localStorage.setItem('token', token);
     console.log("Token localStorage'a kaydedildi");
+
+    // Backend'e login bildirimi yap
+    try {
+      const backendResponse = await fetch('http://localhost:5212/api/Profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          uid: user.uid,
+          email: user.email,
+        }),
+      });
+
+      if (!backendResponse.ok) {
+        console.error('Backend login failed:', backendResponse.status);
+        // Firebase girişi başarılı olduğu için token'ı yine de dön
+      } else {
+        console.log('Backend login successful');
+      }
+    } catch (backendError) {
+      console.error('Backend login error:', backendError);
+      // Firebase girişi başarılı olduğu için token'ı yine de dön
+    }
 
     // Auth state değişikliği event'i yayınla
     const authEvent = new CustomEvent('authStateChanged', {

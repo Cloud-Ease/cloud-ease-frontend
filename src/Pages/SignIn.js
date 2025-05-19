@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import { getAuth } from 'firebase/auth';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../CSS/SignIn.css';
-import Navbar from '../components/Navbar';
-import FormInput from '../components/FormInput';
-import SocialLoginButtons from '../components/SocialLoginButtons';
 import BenefitsList from '../components/BenefitsList';
+import FormInput from '../components/FormInput';
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
+import SocialLoginButtons from '../components/SocialLoginButtons';
 import { register } from '../firebase';
-import { getAuth } from 'firebase/auth';
 
 function SignIn() {
   const navigate = useNavigate();
@@ -131,7 +130,6 @@ function SignIn() {
           // Backende gönderilecek veriyi tam olarak backend DTO'ya göre hazırla
           // ProfileCreateDto { FirstName, LastName, Phone, AvatarUrl, Email }
           const profileData = {
-            UserId: auth.currentUser.uid,
             FirstName: firstName,
             LastName: lastName,
             Email: formData.email,
@@ -143,7 +141,7 @@ function SignIn() {
           console.log('JSON olarak:', JSON.stringify(profileData, null, 2));
 
           // Backend'e profil oluşturma isteği gönder
-          const response = await fetch('https://localhost:7241/api/profile', {
+          const response = await fetch('http://localhost:5212/api/profile', {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${token}`,

@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
-import { convertBackendProfileToFrontend, convertFrontendProfileToBackend } from './profileUtils';
+import { convertBackendProfileToFrontend } from './profileUtils';
 
 // API URL - backend controller'a göre doğru yol
-const API_URL = 'http://localhost:5212/api/profile';
+const API_URL = 'http://localhost:5212/api/Profile';
 
 // Axios instance oluştur
 const axiosInstance = axios.create({
@@ -133,30 +133,6 @@ const logResponseDetails = (response, source) => {
   }
 };
 
-// Offline mod için yerel profil depolama yardımcıları
-const LOCAL_PROFILE_KEY = 'cloud_ease_offline_profile';
-
-const saveProfileLocally = (profileData) => {
-  try {
-    localStorage.setItem(LOCAL_PROFILE_KEY, JSON.stringify(profileData));
-    console.log('Profil verileri yerel depolamaya kaydedildi (offline mod)');
-    return true;
-  } catch (e) {
-    console.error('Yerel depolamaya kaydetme hatası:', e);
-    return false;
-  }
-};
-
-const getLocalProfile = () => {
-  try {
-    const profile = localStorage.getItem(LOCAL_PROFILE_KEY);
-    return profile ? JSON.parse(profile) : null;
-  } catch (e) {
-    console.error('Yerel depolamadan profil okuma hatası:', e);
-    return null;
-  }
-};
-
 export const profileService = {
   getProfile: async () => {
     try {
@@ -196,40 +172,9 @@ export const profileService = {
           });
         }
 
-        // Başarılı yanıtı yerel olarak da saklayalım
-        const convertedData = convertBackendProfileToFrontend(response.data);
-        saveProfileLocally(convertedData);
-
-        return convertedData;
+        return convertBackendProfileToFrontend(response.data);
       } catch (axiosError) {
         console.error('Profil getirme hatası:', axiosError);
-
-        // Veritabanı hatası durumunda yerel depolamadan okuyalım
-        const localProfile = getLocalProfile();
-
-        if (localProfile) {
-          console.log('⚠️ BACKEND HATASI - Yerel depolamadan profil okundu (offline mod)');
-          return localProfile;
-        }
-
-        // Eğer yerel depolamada da profil yoksa, varsayılan profil oluşturalım
-        if (user) {
-          const defaultProfile = {
-            firstName: '',
-            lastName: '',
-            fullName: '',
-            email: user.email || '',
-            phone: '',
-            imageUrl: user.photoURL || '',
-            isActive: true,
-            createAt: new Date().toISOString(),
-            lastLoginAt: new Date().toISOString(),
-          };
-
-          console.log('⚠️ BACKEND HATASI - Varsayılan profil oluşturuldu (offline mod)');
-          saveProfileLocally(defaultProfile);
-          return defaultProfile;
-        }
 
         // Alternatif yöntem deneme
         console.log('Alternatif profil getirme yöntemi deneniyor...');
@@ -251,18 +196,9 @@ export const profileService = {
           const data = await alternativeResponse.json();
           console.log('Alternatif yöntemle alınan veri:', data);
 
-          const convertedData = convertBackendProfileToFrontend(data);
-          saveProfileLocally(convertedData);
-          return convertedData;
+          return convertBackendProfileToFrontend(data);
         } catch (fetchError) {
-          console.error('Fetch hatası, yerel depolamadan okuma deneniyor', fetchError);
-          const localProfile = getLocalProfile();
-
-          if (localProfile) {
-            console.log('⚠️ BACKEND HATASI - Yerel depolamadan profil okundu (offline mod)');
-            return localProfile;
-          }
-
+          console.error('Fetch hatası', fetchError);
           throw fetchError;
         }
       }
@@ -308,75 +244,41 @@ export const profileService = {
       console.log('Backend için ProfileUpdateDto formatında veri:', backendProfileData);
 
       // PUT metodu kullanıyoruz, zira Controller'da HttpPut attribute'u var
-      try {
-        console.log(`PUT metodu ile profil güncelleme deneniyor: ${API_URL}`);
+      const response = await axiosInstance.put('', backendProfileData);
 
-        const response = await axiosInstance.put('', backendProfileData);
+      console.log(`PUT metodu BAŞARILI, yanıt:`, response.data);
+      logResponseDetails(response, `PUT Profile Update`);
 
-        console.log(`PUT metodu BAŞARILI, yanıt:`, response.data);
-        logResponseDetails(response, `PUT Profile Update`);
+      // Bir saniye bekleyelim - veritabanı işlemleri için
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-        // Bir saniye bekleyelim - veritabanı işlemleri için
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Tekrar profil verisini alarak doğrulayalım
+      const verifyResponse = await axiosInstance.get('');
+      console.log('Doğrulama GET yanıtı:', verifyResponse.data);
+      logResponseDetails(verifyResponse, 'Verification GET after update');
 
-        // Tekrar profil verisini alarak doğrulayalım
-        const verifyResponse = await axiosInstance.get('');
-        console.log('Doğrulama GET yanıtı:', verifyResponse.data);
-        logResponseDetails(verifyResponse, 'Verification GET after update');
+      // GET yanıtını karşılaştıralım
+      const updatedData = verifyResponse.data;
+      const expectedData = {
+        FirstName: profileData.firstName,
+        LastName: profileData.lastName,
+        Phone: profileData.phone,
+      };
 
-        // GET yanıtını karşılaştıralım
-        const updatedData = verifyResponse.data;
-        const expectedData = {
-          FirstName: profileData.firstName,
-          LastName: profileData.lastName,
-          Phone: profileData.phone,
-        };
+      console.log('KARŞILAŞTIRMA - Beklenen vs Alınan:', {
+        expected: expectedData,
+        actual: {
+          FirstName: updatedData.FirstName,
+          LastName: updatedData.LastName,
+          Phone: updatedData.Phone,
+        },
+        match:
+          updatedData.FirstName === expectedData.FirstName &&
+          updatedData.LastName === expectedData.LastName &&
+          updatedData.Phone === expectedData.Phone,
+      });
 
-        console.log('KARŞILAŞTIRMA - Beklenen vs Alınan:', {
-          expected: expectedData,
-          actual: {
-            FirstName: updatedData.FirstName,
-            LastName: updatedData.LastName,
-            Phone: updatedData.Phone,
-          },
-          match:
-            updatedData.FirstName === expectedData.FirstName &&
-            updatedData.LastName === expectedData.LastName &&
-            updatedData.Phone === expectedData.Phone,
-        });
-
-        const convertedData = convertBackendProfileToFrontend(response.data);
-        saveProfileLocally(convertedData);
-        return convertedData;
-      } catch (error) {
-        console.error('Profil güncelleme hatası (backend):', error);
-
-        // Veritabanı hatası - yerel olarak profili güncelleyelim (offline mod)
-        console.log('⚠️ BACKEND HATASI - Profil yerel olarak güncelleniyor (offline mod)');
-
-        // Mevcut yerel profili al ve güncelle
-        const currentProfile = getLocalProfile() || {
-          email: user.email || '',
-          isActive: true,
-          createAt: new Date().toISOString(),
-          lastLoginAt: new Date().toISOString(),
-        };
-
-        const updatedProfile = {
-          ...currentProfile,
-          firstName: profileData.firstName || '',
-          lastName: profileData.lastName || '',
-          fullName: `${profileData.firstName || ''} ${profileData.lastName || ''}`.trim(),
-          phone: profileData.phone || '',
-          imageUrl: profileData.imageUrl || currentProfile.imageUrl || '',
-        };
-
-        saveProfileLocally(updatedProfile);
-
-        // Başarılı mesajı gösterip offline profili dön
-        console.log('Profil yerel olarak güncellendi (offline mod):', updatedProfile);
-        return updatedProfile;
-      }
+      return convertBackendProfileToFrontend(response.data);
     } catch (error) {
       // Hata detaylarını logla
       console.error('Profil güncelleme genel hatası:', error);
