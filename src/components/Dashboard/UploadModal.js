@@ -3,7 +3,7 @@ import '../../CSS/Dashboard/UploadModal.css';
 
 // .NET API entegrasyon noktaları
 // const API_BASE_URL = 'https://api.example.com/api';
-// const UPLOAD_ENDPOINT = `${API_BASE_URL}/files/upload`;
+const UPLOAD_ENDPOINT = 'http://localhost:5212/api/File/upload';
 // const FOLDER_UPLOAD_ENDPOINT = `${API_BASE_URL}/files/upload-folder`;
 
 function UploadModal({ isOpen, onClose, onUploadSuccess }) {
@@ -78,70 +78,59 @@ function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     setUploading(true);
 
     // .NET Backend entegrasyonu için dosya yükleme fonksiyonu
-    // async function uploadToServer() {
-    //   try {
-    //     const token = localStorage.getItem('authToken');
-    //
-    //     // Her bir dosyayı ayrı ayrı yükle
-    //     const uploadPromises = files.map(async (file) => {
-    //       const formData = new FormData();
-    //       formData.append('file', file);
-    //
-    //       // Dosya meta verilerini ekle
-    //       formData.append('fileName', file.name);
-    //       formData.append('fileType', file.type);
-    //       formData.append('fileSize', file.size.toString());
-    //
-    //       // XHR kullanarak ilerleme durumunu izleyebiliriz
-    //       return new Promise((resolve, reject) => {
-    //         const xhr = new XMLHttpRequest();
-    //
-    //         xhr.open('POST', UPLOAD_ENDPOINT, true);
-    //         xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-    //
-    //         // İlerleme durumunu takip et
-    //         xhr.upload.onprogress = (event) => {
-    //           if (event.lengthComputable) {
-    //             const percentComplete = Math.round((event.loaded / event.total) * 100);
-    //             setUploadProgress(prev => ({
-    //               ...prev,
-    //               [file.name]: percentComplete
-    //             }));
-    //           }
-    //         };
-    //
-    //         xhr.onload = () => {
-    //           if (xhr.status >= 200 && xhr.status < 300) {
-    //             resolve(xhr.response);
-    //           } else {
-    //             reject(new Error(`Dosya yükleme hatası: ${xhr.statusText}`));
-    //           }
-    //         };
-    //
-    //         xhr.onerror = () => {
-    //           reject(new Error('Dosya yüklenirken ağ hatası oluştu'));
-    //         };
-    //
-    //         xhr.send(formData);
-    //       });
-    //     });
-    //
-    //     // Tüm dosyaların yüklenmesini bekle
-    //     await Promise.all(uploadPromises);
-    //
-    //     // Yükleme tamamlandığında başarılı olduğunu bildir
-    //     onUploadSuccess();
-    //
-    //     // Modalı kapat ve durumu sıfırla
-    //     resetAndClose();
-    //   } catch (error) {
-    //     console.error('Yükleme hatası:', error);
-    //     setUploading(false);
-    //     alert('Dosya yükleme sırasında bir hata oluştu. Lütfen tekrar deneyin.');
-    //   }
-    // }
-    //
-    // uploadToServer();
+    async function uploadToServer() {
+      try {
+        const token = localStorage.getItem('authToken');
+
+        const uploadPromises = files.map(async (file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('fileName', file.name);
+          formData.append('fileType', file.type);
+          formData.append('fileSize', file.size.toString());
+
+          return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', UPLOAD_ENDPOINT, true);
+            if (token) xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+            xhr.upload.onprogress = (event) => {
+              if (event.lengthComputable) {
+                const percentComplete = Math.round((event.loaded / event.total) * 100);
+                setUploadProgress((prev) => ({
+                  ...prev,
+                  [file.name]: percentComplete,
+                }));
+              }
+            };
+
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) {
+                resolve(xhr.response);
+              } else {
+                reject(new Error(`Dosya yükleme hatası: ${xhr.statusText}`));
+              }
+            };
+
+            xhr.onerror = () => {
+              reject(new Error('Dosya yüklenirken ağ hatası oluştu'));
+            };
+
+            xhr.send(formData);
+          });
+        });
+
+        await Promise.all(uploadPromises);
+        onUploadSuccess();
+        resetAndClose();
+      } catch (error) {
+        console.error('Yükleme hatası:', error);
+        setUploading(false);
+        alert('Dosya yükleme sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+      }
+    }
+
+    uploadToServer();
 
     // Simüle edilmiş yükleme işlemi (Backend entegrasyonu olmadan)
     simulateUpload();
