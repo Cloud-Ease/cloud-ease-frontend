@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useState } from 'react';
 import '../CSS/Dashboard/Dashboard.css';
 import DashboardHeader from '../components/Dashboard/DashboardHeader';
 import FileList from '../components/Dashboard/FileList';
@@ -8,115 +9,126 @@ import FileList from '../components/Dashboard/FileList';
 // const FILES_ENDPOINT = `${API_BASE_URL}/files`; // Dosyaları getiren endpoint
 // const CATEGORIES_ENDPOINT = `${API_BASE_URL}/categories`; // Kategorileri getiren endpoint
 
+// Dosya uzantısına göre dosya tipini belirle
+function getFileTypeFromFileName(fileName) {
+  const ext = fileName.split('.').pop().toLowerCase();
+
+  // Resim dosyaları
+  if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp', 'ico', 'tiff'].includes(ext)) {
+    return 'photos';
+  }
+
+  // Doküman dosyaları
+  if (
+    ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv', 'rtf', 'odt'].includes(ext)
+  ) {
+    return 'documents';
+  }
+
+  // Müzik dosyaları
+  if (['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a', 'wma'].includes(ext)) {
+    return 'music';
+  }
+
+  // Video dosyaları
+  if (['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', 'mpeg'].includes(ext)) {
+    return 'videos';
+  }
+
+  // Diğer dosya tipleri
+  return 'other';
+}
+
 function Dashboard() {
   // Sayfalandırma ve filtreleme durumları
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [filteredFiles, setFilteredFiles] = useState([]);
-  // API'den gelecek toplam dosya sayısı
-  // const [totalFileCount, setTotalFileCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const filesPerPage = 8;
 
-  // Dosyaları filtrele - kategoriye ve arama sorgusuna göre
-  useEffect(() => {
-    setLoading(true);
+  // Dosya yükleme işlemini yönet
+  const handleFileUpload = async (file) => {
+    try {
+      setLoading(true);
+      // Form verisi oluştur
+      const formData = new FormData();
+      formData.append('file', file);
 
-    // API isteği burada yapılacak
-    // async function fetchFiles() {
-    //   try {
-    //     // Sayfalama, sıralama ve filtreleme parametreleri
-    //     const queryParams = new URLSearchParams({
-    //       pageNumber: currentPage,
-    //       pageSize: filesPerPage,
-    //       category: selectedCategory === 'all' ? '' : selectedCategory,
-    //       searchTerm: searchQuery,
-    //     });
-    //
-    //     // .NET backend'e istek
-    //     const response = await fetch(`${FILES_ENDPOINT}?${queryParams}`);
-    //
-    //     if (!response.ok) {
-    //       throw new Error('API yanıt vermedi');
-    //     }
-    //
-    //     const data = await response.json();
-    //
-    //     // API'den gelen veriyi state'e atama
-    //     setFilteredFiles(data.items);
-    //     setTotalFileCount(data.totalCount);
-    //
-    //     // Eğer mevcut sayfa toplam sayfadan fazlaysa, ilk sayfaya dön
-    //     const maxPage = Math.ceil(data.totalCount / filesPerPage);
-    //     if (currentPage > maxPage && maxPage > 0) {
-    //       setCurrentPage(1);
-    //     }
-    //   } catch (error) {
-    //     console.error('Dosyalar yüklenirken hata oluştu:', error);
-    //     // Hata durumunda kullanıcıya bildirim göster
-    //     // alert('Dosyalar yüklenirken bir sorun oluştu. Lütfen daha sonra tekrar deneyin.');
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // }
-    //
-    // fetchFiles();
+      // Dosya tipini belirle ve form verisine ekle
+      const fileType = getFileTypeFromFileName(file.name);
+      formData.append('fileType', fileType);
 
-    // Simülasyon - gerçek uygulamada yukarıdaki fetchFiles fonksiyonu kullanılacak
-    setTimeout(() => {
-      setFilteredFiles([]);
+      // Kullanıcı jetonu (token) ile birlikte dosyayı gönder
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:5212/api/File/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`,
+        },
+        withCredentials: true,
+      });
+
+      // FileList bileşeninin dosyaları yeniden yüklemesini sağlayacak bir olay tetikle
+      const fileUploadEvent = new CustomEvent('fileUploaded');
+      window.dispatchEvent(fileUploadEvent);
+
       setLoading(false);
-    }, 600);
-  }, [selectedCategory, searchQuery, currentPage]);
+
+      return {
+        id: response.data.id,
+        fileName: file.name,
+      };
+    } catch (error) {
+      console.error('Dosya yükleme hatası:', error);
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  // Dosya silme işlemini yönet
+  const handleFileDelete = (fileId) => {
+    // Bu fonksiyon artık kullanılmıyor, FileList bileşeni kendi içinde silme işlemini gerçekleştiriyor
+    return true;
+  };
 
   // Sayfa değiştirme işleyicisi
   const handlePageChange = (page) => {
     setCurrentPage(page);
     // Sayfa değiştiğinde sayfanın üstüne kaydır
     window.scrollTo(0, 0);
-
-    // Sayfa değiştiğinde API'ye yeni istek atılacak
-    // useEffect hook'u içindeki bağımlılık dizisine currentPage eklendiği için
-    // sayfa değiştiğinde otomatik olarak yeni istek yapılacak
   };
-
-  // Mevcut sayfada gösterilecek dosyaları hesapla
-  // .NET backend'de sayfalama yapılacağı için bu hesaplamalar backend'de yapılacak
-  // Burada sadece UI için gerekli hesaplamaları yapıyoruz
-  const totalPages = Math.ceil(filteredFiles.length / filesPerPage);
 
   // Kategori değişikliği işleyicisi
   const handleCategoryChange = (category) => {
+    console.log('Category changed to:', category);
     setSelectedCategory(category);
     setCurrentPage(1); // Kategori değiştiğinde ilk sayfaya dön
-
-    // Kategori değiştiğinde API'ye yeni istek atılacak
-    // useEffect hook'u içindeki bağımlılık dizisine selectedCategory eklendiği için
-    // kategori değiştiğinde otomatik olarak yeni istek yapılacak
   };
 
   // Arama işleyicisi
   const handleSearch = (query) => {
+    console.log('Search query:', query);
     setSearchQuery(query);
     setCurrentPage(1); // Arama yapıldığında ilk sayfaya dön
-
-    // Arama yapıldığında API'ye yeni istek atılacak
-    // useEffect hook'u içindeki bağımlılık dizisine searchQuery eklendiği için
-    // arama terimi değiştiğinde otomatik olarak yeni istek yapılacak
   };
 
   return (
     <div className="dashboard-container">
-      <DashboardHeader onCategoryChange={handleCategoryChange} onSearch={handleSearch} />
+      <DashboardHeader
+        onCategoryChange={handleCategoryChange}
+        onSearch={handleSearch}
+        onFileUpload={handleFileUpload}
+      />
       <main className="dashboard-content">
         <FileList
-          files={filteredFiles}
           loading={loading}
           currentPage={currentPage}
-          totalPages={totalPages}
+          totalPages={1} // API'den gelen sayfalama bilgisine göre güncellenecek
           onPageChange={handlePageChange}
+          selectedCategory={selectedCategory}
+          searchQuery={searchQuery}
         />
       </main>
     </div>

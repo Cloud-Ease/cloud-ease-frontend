@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { getAuth } from 'firebase/auth';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../CSS/Dashboard/DashboardHeader.css';
 import { logout } from '../../firebase'; // Firebase logout fonksiyonunu import et
-import { getAuth } from 'firebase/auth';
 
 // .NET API entegrasyon noktaları
 // const API_BASE_URL = 'https://api.example.com/api';
@@ -11,13 +11,14 @@ import { getAuth } from 'firebase/auth';
 // const LOGOUT_ENDPOINT = `${API_BASE_URL}/auth/logout`;
 // const CATEGORIES_ENDPOINT = `${API_BASE_URL}/categories`;
 
-function DashboardHeader({ onCategoryChange, onSearch }) {
+function DashboardHeader({ onCategoryChange, onSearch, onFileUpload }) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
   const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   // .NET backend'den kategorileri çekme
   // const [categories, setCategories] = useState([]);
@@ -142,47 +143,25 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
     fileInputRef.current.click();
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
-      // .NET backend'e dosya yükleme
-      // async function uploadFile(file) {
-      //   try {
-      //     // Form verisi oluştur
-      //     const formData = new FormData();
-      //     formData.append('file', file);
-      //
-      //     // Kullanıcı jetonu (token) ile birlikte dosyayı gönder
-      //     const token = localStorage.getItem('authToken');
-      //     const response = await fetch(UPLOAD_ENDPOINT, {
-      //       method: 'POST',
-      //       headers: {
-      //         'Authorization': `Bearer ${token}`
-      //       },
-      //       body: formData
-      //     });
-      //
-      //     if (!response.ok) {
-      //       throw new Error('Dosya yüklenirken bir hata oluştu');
-      //     }
-      //
-      //     const result = await response.json();
-      //     alert(`Dosya başarıyla yüklendi: ${result.fileName}`);
-      //
-      //     // Dosya listesini yenilemek için bir callback çağrılabilir
-      //     // onFileUploaded();
-      //   } catch (error) {
-      //     console.error('Dosya yükleme hatası:', error);
-      //     alert(`Dosya yüklenirken bir hata oluştu: ${error.message}`);
-      //   }
-      // }
-      //
-      // uploadFile(selectedFile);
+      setIsUploading(true);
 
-      // Geçici olarak sadece bildirim gösterelim
-      alert(`Dosya seçildi: ${selectedFile.name}`);
-      // Formu sıfırla
-      e.target.value = null;
+      try {
+        // Dosyayı Dashboard bileşenine gönder
+        await onFileUpload(selectedFile);
+
+        // Yükleme tamamlandı
+        setIsUploading(false);
+
+        // Input'u sıfırla
+        e.target.value = null;
+      } catch (error) {
+        console.error('Dosya yükleme hatası:', error);
+        setIsUploading(false);
+        e.target.value = null;
+      }
     }
   };
 
@@ -238,8 +217,16 @@ function DashboardHeader({ onCategoryChange, onSearch }) {
             style={{ display: 'none' }}
             onChange={handleFileChange}
           />
-          <button className="upload-btn" onClick={handleFileUploadClick}>
-            <i className="fas fa-upload"></i> Dosya Yükle
+          <button className="upload-btn" onClick={handleFileUploadClick} disabled={isUploading}>
+            {isUploading ? (
+              <>
+                <i className="fas fa-spinner fa-spin"></i> Yükleniyor...
+              </>
+            ) : (
+              <>
+                <i className="fas fa-upload"></i> Dosya Yükle
+              </>
+            )}
           </button>
           <div className="user-menu">
             <div className="user-avatar" onClick={handleUserMenuToggle}>
