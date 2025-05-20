@@ -1,29 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { getAuth } from 'firebase/auth';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Container,
-  Grid,
-  Typography,
-  Avatar,
-  Box,
-  Button,
-  Paper,
-  IconButton,
-  CircularProgress,
-  Snackbar,
-  Alert,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import DashboardHeader from '../components/Dashboard/DashboardHeader';
 import '../CSS/Dashboard/Dashboard.css';
 import '../CSS/Profile.css';
 import { profileService } from '../services/profileService';
-import { getAuth } from 'firebase/auth';
 
 function Profile() {
   const [profileData, setProfileData] = useState(null);
@@ -37,7 +18,7 @@ function Profile() {
     phone: '',
   });
   const [refreshKey, setRefreshKey] = useState(0);
-  const [showDebug, setShowDebug] = useState(false);
+  const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -47,8 +28,7 @@ function Profile() {
   const fetchProfileData = async () => {
     try {
       console.log('Profil bilgileri yükleniyor...');
-      console.log('ProfileService.getProfile() çağrılıyor...');
-
+      setLoading(true);
       const data = await profileService.getProfile();
       console.log('Alınan profil verileri:', data);
 
@@ -150,16 +130,19 @@ function Profile() {
           }
 
           setError(errorMsg);
+          showNotification(errorMsg, 'error');
         }
       } else {
-        setError('Profil bilgileri yüklenirken bir hata oluştu: ' + err.message);
+        const errorMsg = 'Profil bilgileri yüklenirken bir hata oluştu: ' + err.message;
+        setError(errorMsg);
+        showNotification(errorMsg, 'error');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEditDialogOpen = () => {
+  const handleEditButtonClick = () => {
     setIsEditDialogOpen(true);
   };
 
@@ -173,6 +156,13 @@ function Profile() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ message, type });
+    setTimeout(() => {
+      setNotification(null);
+    }, 3000);
   };
 
   const handleProfileUpdate = async () => {
@@ -212,6 +202,7 @@ function Profile() {
 
       setError(null);
       setIsEditDialogOpen(false);
+      showNotification('Profil başarıyla güncellendi');
 
       // Force a refresh after update to ensure we have the latest data
       setRefreshKey((prevKey) => prevKey + 1);
@@ -225,341 +216,277 @@ function Profile() {
         data: err.response?.data,
         stack: err.stack,
       });
-      setError('Profil güncellenirken bir hata oluştu: ' + err.message);
+      const errorMsg = 'Profil güncellenirken bir hata oluştu: ' + err.message;
+      setError(errorMsg);
+      showNotification(errorMsg, 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleBack = () => {
-    navigate('/dashboard');
-  };
+  // Dashboard header için arama ve kategori değişikliğini handle eden sahte fonksiyonlar
+  const handleCategoryChange = () => {};
+  const handleSearch = () => {};
+  const handleFileUpload = () => {};
 
-  if (loading) {
+  // Eğer profil verisi yüklenmemişse veya hata varsa uygun mesajı göster
+  if (loading && !profileData) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
-        <CircularProgress />
-      </Box>
+      <div className="dashboard-container">
+        <DashboardHeader
+          onCategoryChange={handleCategoryChange}
+          onSearch={handleSearch}
+          onFileUpload={handleFileUpload}
+          showCategories={false}
+          isProfilePage={true}
+        />
+        <div className="dashboard-content">
+          <div className="loading-files">
+            <i className="fas fa-spinner fa-spin"></i>
+            <p>Profil bilgileri yükleniyor...</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  // Add a safeguard for null profile data
-  if (!profileData) {
+  // Eğer profil verisi yoksa ve yükleme de tamamlandıysa hata durumunu göster
+  if (!profileData && !loading) {
     return (
-      <div className="profile-container">
-        <div className="profile-header">
-          <button className="back-to-dashboard" onClick={handleBack}>
-            <ArrowBackIcon /> Panele Dön
-          </button>
-          <h1>Kullanıcı Profili</h1>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={() => setRefreshKey((prevKey) => prevKey + 1)}
-            style={{ marginLeft: 'auto' }}
-          >
-            Profili Yenile
-          </Button>
+      <div className="dashboard-container">
+        <DashboardHeader
+          onCategoryChange={handleCategoryChange}
+          onSearch={handleSearch}
+          onFileUpload={handleFileUpload}
+          showCategories={false}
+          isProfilePage={true}
+        />
+        <div className="dashboard-content">
+          <div className="profile-error-container">
+            <div className="profile-error-card">
+              <i className="fas fa-exclamation-circle"></i>
+              <h2>Profil Yüklenemedi</h2>
+              <p>{error || 'Profil bilgileri yüklenirken bir hata oluştu.'}</p>
+              <button
+                className="profile-refresh-btn"
+                onClick={() => setRefreshKey((prev) => prev + 1)}
+              >
+                <i className="fas fa-sync-alt"></i> Yeniden Dene
+              </button>
+
+              <div className="create-profile-form">
+                <h3>Profil Oluştur</h3>
+                <div className="profile-form-group">
+                  <label htmlFor="firstName">Ad</label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    value={editFormData.firstName}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <div className="profile-form-group">
+                  <label htmlFor="lastName">Soyad</label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    value={editFormData.lastName}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <div className="profile-form-group">
+                  <label htmlFor="phone">Telefon</label>
+                  <input
+                    type="text"
+                    id="phone"
+                    name="phone"
+                    value={editFormData.phone}
+                    onChange={handleEditFormChange}
+                  />
+                </div>
+                <button className="profile-update-btn" onClick={handleProfileUpdate}>
+                  {loading ? <i className="fas fa-spinner fa-spin"></i> : null}
+                  Profil Oluştur
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <Container maxWidth="lg" sx={{ py: 4 }}>
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-            <Typography variant="h6" color="error" gutterBottom>
-              Profil bilgileri yüklenemedi
-            </Typography>
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => setRefreshKey((prevKey) => prevKey + 1)}
-              sx={{ mt: 2 }}
-            >
-              Yeniden Dene
-            </Button>
-
-            {/* Add a form to manually create a profile */}
-            <Box sx={{ mt: 4, pt: 4, borderTop: '1px solid #eee' }}>
-              <Typography variant="h6" gutterBottom>
-                Profil Oluştur
-              </Typography>
-              <TextField
-                fullWidth
-                label="Ad"
-                name="firstName"
-                value={editFormData.firstName}
-                onChange={handleEditFormChange}
-                margin="normal"
-              />
-              <TextField
-                fullWidth
-                label="Soyad"
-                name="lastName"
-                value={editFormData.lastName}
-                onChange={handleEditFormChange}
-                margin="normal"
-              />
-              <TextField
-                fullWidth
-                label="Telefon"
-                name="phone"
-                value={editFormData.phone}
-                onChange={handleEditFormChange}
-                margin="normal"
-              />
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={handleProfileUpdate}
-                sx={{ mt: 2 }}
-              >
-                Profil Oluştur
-              </Button>
-            </Box>
-          </Paper>
-        </Container>
-
-        {/* Debug Panel - Hidden by default */}
-        <Container maxWidth="lg" sx={{ my: 2 }}>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => setShowDebug(!showDebug)}
-            size="small"
-          >
-            {showDebug ? 'Hata Ayıklama Panelini Gizle' : 'Hata Ayıklama Panelini Göster'}
-          </Button>
-
-          {showDebug && (
-            <Paper elevation={2} sx={{ p: 3, mt: 2, backgroundColor: '#f5f5f5' }}>
-              <Typography variant="h6" gutterBottom>
-                Hata Ayıklama Bilgileri
-              </Typography>
-              <Typography variant="body2" gutterBottom>
-                <strong>Hata:</strong> {error || 'Yok'}
-              </Typography>
-              <Typography variant="body2" gutterBottom>
-                <strong>Form Verileri:</strong>
-              </Typography>
-              <pre
-                style={{
-                  whiteSpace: 'pre-wrap',
-                  backgroundColor: '#eee',
-                  padding: '10px',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                  fontSize: '0.8rem',
-                }}
-              >
-                {JSON.stringify(editFormData, null, 2)}
-              </pre>
-            </Paper>
-          )}
-        </Container>
-
-        <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
-          <Alert onClose={() => setError(null)} severity="error">
-            {error}
-          </Alert>
-        </Snackbar>
       </div>
     );
   }
 
   return (
-    <div className="profile-container">
-      <div className="profile-header">
-        <button className="back-to-dashboard" onClick={handleBack}>
-          <ArrowBackIcon /> Panele Dön
-        </button>
-        <h1>Kullanıcı Profili</h1>
-        <Button
-          variant="outlined"
-          color="primary"
-          onClick={() => setRefreshKey((prevKey) => prevKey + 1)}
-          style={{ marginLeft: 'auto' }}
-        >
-          Profili Yenile
-        </Button>
-      </div>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Paper
-          elevation={3}
-          sx={{
-            borderRadius: 2,
-            overflow: 'hidden',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            backdropFilter: 'blur(10px)',
-          }}
-        >
-          <Box
-            sx={{
-              background: 'linear-gradient(45deg, #1976D2 30%, #2196F3 90%)',
-              p: 4,
-              color: 'white',
-              position: 'relative',
-            }}
-          >
-            <Grid container spacing={3} alignItems="center">
-              <Grid item>
-                <Avatar
-                  sx={{
-                    width: 120,
-                    height: 120,
-                    border: '4px solid white',
-                  }}
-                  src={profileData?.imageUrl}
-                  alt={profileData?.fullName}
-                />
-              </Grid>
-              <Grid item xs>
-                <Typography variant="h4" gutterBottom>
-                  {profileData?.fullName}
-                </Typography>
-                <Typography variant="subtitle1">{profileData?.email}</Typography>
-              </Grid>
-              <Grid item>
-                <IconButton onClick={handleEditDialogOpen} sx={{ color: 'white' }}>
-                  <EditIcon />
-                </IconButton>
-              </Grid>
-            </Grid>
-          </Box>
+    <div className="dashboard-container">
+      <DashboardHeader
+        onCategoryChange={handleCategoryChange}
+        onSearch={handleSearch}
+        onFileUpload={handleFileUpload}
+        showCategories={false}
+        isProfilePage={true}
+      />
+      <div className="dashboard-content">
+        <div className="profile-content">
+          <div className="profile-card">
+            <div className="profile-header-section">
+              <div className="profile-avatar">
+                {profileData?.imageUrl ? (
+                  <img src={profileData.imageUrl} alt={profileData.fullName} />
+                ) : (
+                  <div className="profile-avatar-placeholder">
+                    {profileData?.firstName?.charAt(0) || ''}
+                    {profileData?.lastName?.charAt(0) || ''}
+                  </div>
+                )}
+              </div>
+              <div className="profile-header-info">
+                <h2>{profileData?.fullName}</h2>
+                <p>{profileData?.email}</p>
+                <button className="profile-edit-btn" onClick={handleEditButtonClick}>
+                  <i className="fas fa-edit"></i> Profili Düzenle
+                </button>
+              </div>
+            </div>
 
-          <Box p={4}>
-            <Grid container spacing={4}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Profil Bilgileri
-                </Typography>
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Ad Soyad:</strong> {profileData?.fullName}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>E-posta:</strong> {profileData?.email}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Telefon:</strong> {profileData?.phone || 'Belirtilmemiş'}
-                  </Typography>
-                </Box>
-              </Grid>
+            <div className="profile-details">
+              <div className="profile-details-section">
+                <h3>Kişisel Bilgiler</h3>
+                <div className="profile-detail-item">
+                  <span className="profile-detail-label">Ad:</span>
+                  <span className="profile-detail-value">
+                    {profileData?.firstName || 'Belirtilmemiş'}
+                  </span>
+                </div>
+                <div className="profile-detail-item">
+                  <span className="profile-detail-label">Soyad:</span>
+                  <span className="profile-detail-value">
+                    {profileData?.lastName || 'Belirtilmemiş'}
+                  </span>
+                </div>
+                <div className="profile-detail-item">
+                  <span className="profile-detail-label">E-posta:</span>
+                  <span className="profile-detail-value">
+                    {profileData?.email || 'Belirtilmemiş'}
+                  </span>
+                </div>
+                <div className="profile-detail-item">
+                  <span className="profile-detail-label">Telefon:</span>
+                  <span className="profile-detail-value">
+                    {profileData?.phone || 'Belirtilmemiş'}
+                  </span>
+                </div>
+              </div>
 
-              <Grid item xs={12} md={6}>
-                <Typography variant="h6" gutterBottom color="primary">
-                  Hesap Bilgileri
-                </Typography>
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Hesap Durumu:</strong>{' '}
-                    <span style={{ color: profileData?.isActive ? 'green' : 'red' }}>
-                      {profileData?.isActive ? 'Aktif' : 'Pasif'}
-                    </span>
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Üyelik Tarihi:</strong>{' '}
+              <div className="profile-details-section">
+                <h3>Hesap Bilgileri</h3>
+                <div className="profile-detail-item">
+                  <span className="profile-detail-label">Hesap Durumu:</span>
+                  <span
+                    className={`profile-detail-value ${
+                      profileData?.isActive ? 'active-status' : 'inactive-status'
+                    }`}
+                  >
+                    {profileData?.isActive ? 'Aktif' : 'Pasif'}
+                  </span>
+                </div>
+                <div className="profile-detail-item">
+                  <span className="profile-detail-label">Üyelik Tarihi:</span>
+                  <span className="profile-detail-value">
                     {profileData?.createAt
                       ? new Date(profileData.createAt).toLocaleDateString('tr-TR')
                       : 'Belirtilmemiş'}
-                  </Typography>
-                  <Typography variant="body1" gutterBottom>
-                    <strong>Son Giriş:</strong>{' '}
+                  </span>
+                </div>
+                <div className="profile-detail-item">
+                  <span className="profile-detail-label">Son Giriş:</span>
+                  <span className="profile-detail-value">
                     {profileData?.lastLoginAt
                       ? new Date(profileData.lastLoginAt).toLocaleDateString('tr-TR')
                       : 'Belirtilmemiş'}
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </Box>
-        </Paper>
-      </Container>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      {/* Debug Panel - Hidden by default */}
-      <Container maxWidth="lg" sx={{ my: 2 }}>
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => setShowDebug(!showDebug)}
-          size="small"
-        >
-          {showDebug ? 'Hata Ayıklama Panelini Gizle' : 'Hata Ayıklama Panelini Göster'}
-        </Button>
+      {/* Profil Düzenleme Modal */}
+      {isEditDialogOpen && (
+        <div className="profile-edit-modal">
+          <div className="profile-edit-modal-content">
+            <div className="profile-edit-modal-header">
+              <h3>Profil Bilgilerini Düzenle</h3>
+              <button className="modal-close-btn" onClick={handleEditDialogClose}>
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+            <div className="profile-edit-form">
+              <div className="form-group">
+                <label htmlFor="editFirstName">Ad</label>
+                <input
+                  type="text"
+                  id="editFirstName"
+                  name="firstName"
+                  value={editFormData.firstName}
+                  onChange={handleEditFormChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="editLastName">Soyad</label>
+                <input
+                  type="text"
+                  id="editLastName"
+                  name="lastName"
+                  value={editFormData.lastName}
+                  onChange={handleEditFormChange}
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="editEmail">E-posta</label>
+                <input
+                  type="email"
+                  id="editEmail"
+                  name="email"
+                  value={editFormData.email}
+                  onChange={handleEditFormChange}
+                  disabled
+                />
+              </div>
+              <div className="form-group">
+                <label htmlFor="editPhone">Telefon</label>
+                <input
+                  type="text"
+                  id="editPhone"
+                  name="phone"
+                  value={editFormData.phone}
+                  onChange={handleEditFormChange}
+                />
+              </div>
+            </div>
+            <div className="profile-edit-modal-actions">
+              <button className="cancel-btn" onClick={handleEditDialogClose}>
+                İptal
+              </button>
+              <button className="save-btn" onClick={handleProfileUpdate} disabled={loading}>
+                {loading ? <i className="fas fa-spinner fa-spin"></i> : null}
+                Kaydet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-        {showDebug && (
-          <Paper elevation={2} sx={{ p: 3, mt: 2, backgroundColor: '#f5f5f5' }}>
-            <Typography variant="h6" gutterBottom>
-              Profil Veri Yapısı (Hata Ayıklama)
-            </Typography>
-            <pre
-              style={{
-                whiteSpace: 'pre-wrap',
-                backgroundColor: '#eee',
-                padding: '10px',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '0.8rem',
-                maxHeight: '300px',
-                overflow: 'auto',
-              }}
-            >
-              {JSON.stringify(profileData, null, 2)}
-            </pre>
-          </Paper>
-        )}
-      </Container>
-
-      {/* Profil Düzenleme Dialog */}
-      <Dialog open={isEditDialogOpen} onClose={handleEditDialogClose}>
-        <DialogTitle>Profil Bilgilerini Düzenle</DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2 }}>
-            <TextField
-              fullWidth
-              label="Ad"
-              name="firstName"
-              value={editFormData.firstName}
-              onChange={handleEditFormChange}
-              margin="normal"
-            />
-            <TextField
-              fullWidth
-              label="Soyad"
-              name="lastName"
-              value={editFormData.lastName}
-              onChange={handleEditFormChange}
-              margin="normal"
-            />
-            <TextField
-              fullWidth
-              label="E-posta"
-              name="email"
-              value={editFormData.email}
-              onChange={handleEditFormChange}
-              margin="normal"
-              disabled
-            />
-            <TextField
-              fullWidth
-              label="Telefon"
-              name="phone"
-              value={editFormData.phone}
-              onChange={handleEditFormChange}
-              margin="normal"
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleEditDialogClose}>İptal</Button>
-          <Button onClick={handleProfileUpdate} variant="contained" color="primary">
-            Kaydet
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError(null)}>
-        <Alert onClose={() => setError(null)} severity="error">
-          {error}
-        </Alert>
-      </Snackbar>
+      {/* Bildirim Toast */}
+      {notification && (
+        <div className={`notification-toast ${notification.type}`}>
+          {notification.type === 'success' && <i className="fas fa-check-circle"></i>}
+          {notification.type === 'error' && <i className="fas fa-exclamation-circle"></i>}
+          {notification.message}
+        </div>
+      )}
     </div>
   );
 }

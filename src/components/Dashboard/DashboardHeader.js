@@ -11,7 +11,13 @@ import { logout } from '../../firebase'; // Firebase logout fonksiyonunu import 
 // const LOGOUT_ENDPOINT = `${API_BASE_URL}/auth/logout`;
 // const CATEGORIES_ENDPOINT = `${API_BASE_URL}/categories`;
 
-function DashboardHeader({ onCategoryChange, onSearch, onFileUpload }) {
+function DashboardHeader({
+  onCategoryChange,
+  onSearch,
+  onFileUpload,
+  showCategories = true,
+  isProfilePage = false,
+}) {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
@@ -217,17 +223,25 @@ function DashboardHeader({ onCategoryChange, onSearch, onFileUpload }) {
             style={{ display: 'none' }}
             onChange={handleFileChange}
           />
-          <button className="upload-btn" onClick={handleFileUploadClick} disabled={isUploading}>
-            {isUploading ? (
-              <>
-                <i className="fas fa-spinner fa-spin"></i> Yükleniyor...
-              </>
-            ) : (
-              <>
-                <i className="fas fa-upload"></i> Dosya Yükle
-              </>
-            )}
-          </button>
+
+          {isProfilePage ? (
+            <button className="back-to-dashboard-btn" onClick={() => navigate('/dashboard')}>
+              <i className="fas fa-arrow-left"></i> Panele Dön
+            </button>
+          ) : (
+            <button className="upload-btn" onClick={handleFileUploadClick} disabled={isUploading}>
+              {isUploading ? (
+                <>
+                  <i className="fas fa-spinner fa-spin"></i> Yükleniyor...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-upload"></i> Dosya Yükle
+                </>
+              )}
+            </button>
+          )}
+
           <div className="user-menu">
             <div className="user-avatar" onClick={handleUserMenuToggle}>
               {userInfo && userInfo.photoURL ? (
@@ -245,9 +259,6 @@ function DashboardHeader({ onCategoryChange, onSearch, onFileUpload }) {
                     </a>
                   </li>
                   <li>
-                    <a href="#settings">Ayarlar</a>
-                  </li>
-                  <li>
                     <button onClick={handleLogout}>Çıkış</button>
                   </li>
                 </ul>
@@ -257,20 +268,22 @@ function DashboardHeader({ onCategoryChange, onSearch, onFileUpload }) {
         </div>
       </div>
 
-      <nav className="dashboard-categories">
-        <ul>
-          {categories.map((category) => (
-            <li key={category.id}>
-              <button
-                className={activeCategory === category.id ? 'active' : ''}
-                onClick={() => handleCategoryClick(category.id)}
-              >
-                {category.name}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      {showCategories && (
+        <nav className="dashboard-categories">
+          <ul>
+            {categories.map((category) => (
+              <li key={category.id}>
+                <button
+                  className={activeCategory === category.id ? 'active' : ''}
+                  onClick={() => handleCategoryClick(category.id)}
+                >
+                  {category.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </header>
   );
 }
