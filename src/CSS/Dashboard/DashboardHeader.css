@@ -81,6 +81,24 @@
   background-color: #3a56d4;
 }
 
+.back-to-dashboard-btn {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.back-to-dashboard-btn:hover {
+  background-color: #5a6268;
+}
+
 .user-menu {
   position: relative;
 }
