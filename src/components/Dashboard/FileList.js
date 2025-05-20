@@ -135,6 +135,11 @@ function FileList({
     };
   }, []);
 
+  // Arama sorgusu veya kategori değiştiğinde filtreleme yapılması için
+  useEffect(() => {
+    // Loglar silindi
+  }, [searchQuery, selectedCategory]);
+
   const toggleFileSelection = (fileId) => {
     const fileObj = localFiles.find((file) => file.id === fileId);
     if (!fileObj) return;

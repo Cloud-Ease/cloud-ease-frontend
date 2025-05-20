@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import '../CSS/Dashboard/Dashboard.css';
 import DashboardHeader from '../components/Dashboard/DashboardHeader';
 import FileList from '../components/Dashboard/FileList';
@@ -47,6 +47,11 @@ function Dashboard() {
   const [loading, setLoading] = useState(false);
 
   const filesPerPage = 8;
+
+  // Arama işlemi yapıldığında console'a yazarak debug yapalım
+  useEffect(() => {
+    // Loglar silindi
+  }, [searchQuery]);
 
   // Dosya yükleme işlemini yönet
   const handleFileUpload = async (file) => {
@@ -102,14 +107,12 @@ function Dashboard() {
 
   // Kategori değişikliği işleyicisi
   const handleCategoryChange = (category) => {
-    console.log('Category changed to:', category);
     setSelectedCategory(category);
     setCurrentPage(1); // Kategori değiştiğinde ilk sayfaya dön
   };
 
   // Arama işleyicisi
   const handleSearch = (query) => {
-    console.log('Search query:', query);
     setSearchQuery(query);
     setCurrentPage(1); // Arama yapıldığında ilk sayfaya dön
   };

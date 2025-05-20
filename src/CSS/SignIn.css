@@ -6,42 +6,6 @@
   font-family: 'Poppins', sans-serif;
 }
 
-.signin-header {
-  background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
-  color: white;
-  padding: 1.5rem 7%;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-}
-
-.signin-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cpattern id='cloud-pattern' patternUnits='userSpaceOnUse' width='100' height='100' patternTransform='scale(2) rotate(0)'%3E%3Cpath fill='%23ffffff' fill-opacity='0.05' d='M25.5,25C24.04,25,22.77,24.41,21.81,23.44C21.02,23.57,20.29,23.49,19.63,23.22C18.55,22.75,17.77,21.75,17.5,20.5C16.42,20.17,15.55,19.44,15.13,18.45C14.65,17.32,14.8,16.1,15.37,15.13C15.04,14.47,14.87,13.73,14.87,13C14.87,10.24,17.11,8,19.87,8C20.29,8,20.67,8.06,21.06,8.13C22.15,6.45,24.04,5.33,26.12,5.33C28.96,5.33,31.34,7.36,31.94,10.07C33.41,10.66,34.5,12.07,34.5,13.67C34.5,15.82,32.85,17.58,30.75,17.83C30.27,19.19,29.01,20.23,27.46,20.46C27.16,22.03,26.09,23.29,24.55,23.76C24.19,24.1,23.77,24.39,23.29,24.61C22.35,24.87,21.81,25,20.75,25'%3E%3C/path%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23cloud-pattern)'/%3E%3C/svg%3E");
-  opacity: 0.15;
-}
-
-.signin-header .logo {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: white;
-  letter-spacing: -0.5px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  width: fit-content;
-}
-
-.signin-header .logo::before {
-  content: '☁️';
-  margin-right: 8px;
-  font-size: 1.5rem;
-}
-
 .signin-form-container {
   display: flex;
   justify-content: center;
@@ -50,6 +14,7 @@
   padding: 2rem 1rem 4rem;
   background-color: #f8f9fa;
   position: relative;
+  margin-top: 0;
 }
 
 .signin-form-container::before {
@@ -478,10 +443,6 @@
 @media (max-width: 768px) {
   .signin-form-card {
     padding: 2rem;
-  }
-
-  .signin-header {
-    padding: 1.2rem 5%;
   }
 
   .signin-form-container {

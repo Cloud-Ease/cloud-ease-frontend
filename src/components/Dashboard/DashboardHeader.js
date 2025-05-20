@@ -109,7 +109,10 @@ function DashboardHeader({
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+    const value = e.target.value;
+    setSearchTerm(value);
+    // Arama kutusu değiştiğinde (özellikle boşsa) hemen araması için
+    onSearch(value);
   };
 
   const handleSearchSubmit = (e) => {
@@ -118,16 +121,12 @@ function DashboardHeader({
   };
 
   const handleLogout = async () => {
-    console.log('Dashboard header: logout butonu tıklandı');
-
     try {
       // Firebase logout fonksiyonunu çağır
       const success = await logout();
-      console.log('Firebase logout sonucu:', success ? 'Başarılı' : 'Başarısız');
 
       // Token'ı manuel olarak temizle
       localStorage.removeItem('token');
-      console.log("Token localStorage'dan temizlendi");
 
       // Login sayfasına yönlendir
       navigate('/login');
@@ -204,17 +203,19 @@ function DashboardHeader({
           Cloud Ease
         </div>
 
-        <form className="dashboard-search-bar" onSubmit={handleSearchSubmit}>
-          <input
-            type="text"
-            placeholder="Dosyalarınızda arayın..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
-          <button type="submit" className="search-btn">
-            <i className="fas fa-search"></i>
-          </button>
-        </form>
+        {!isProfilePage && (
+          <form className="dashboard-search-bar" onSubmit={handleSearchSubmit}>
+            <input
+              type="text"
+              placeholder="Dosyalarınızda arayın..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+            />
+            <button type="submit" className="search-btn">
+              <i className="fas fa-search"></i>
+            </button>
+          </form>
+        )}
 
         <div className="dashboard-actions">
           <input
