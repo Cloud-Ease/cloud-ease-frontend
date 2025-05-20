@@ -96,7 +96,7 @@ export const register = async (email, password) => {
 
     // Backend'e kullanıcı kaydını yap
     try {
-      const backendResponse = await fetch('http://localhost:5212/api/Profile', {
+      const backendResponse = await fetch('http://localhost:5212/api/profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -145,7 +145,7 @@ export const loginAndGetToken = async (email, password) => {
 
     // Backend'e login bildirimi yap
     try {
-      const backendResponse = await fetch('http://localhost:5212/api/Profile', {
+      const backendResponse = await fetch('http://localhost:5212/api/profile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

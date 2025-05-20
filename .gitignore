@@ -3,7 +3,8 @@
 # dependencies
 /node_modules
 .DS_Store
-
+cloud-ease-auth-firebase-adminsdk-fbsvc-7cadf08cad.json
+x.js
 # testing
 /coverage
 
