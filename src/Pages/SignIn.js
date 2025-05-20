@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import '../CSS/SignIn.css';
 import BenefitsList from '../components/BenefitsList';
 import FormInput from '../components/FormInput';
+import Navbar from '../components/Navbar';
 import PasswordStrengthMeter from '../components/PasswordStrengthMeter';
 import SocialLoginButtons from '../components/SocialLoginButtons';
 import { register } from '../firebase';
@@ -103,20 +104,15 @@ function SignIn() {
     try {
       // Firebase'den gelen token'ı alıyoruz
       const token = await register(formData.email, formData.password);
-      console.log('Firebase token alındı:', token ? 'Token var' : 'Token yok');
-      console.log('Token uzunluğu:', token ? token.length : 0);
-      console.log('Token başlangıç:', token ? token.substring(0, 20) + '...' : 'Yok');
 
       // Token'ı localStorage'a kaydediyoruz
       localStorage.setItem('token', token);
-      console.log("Token localStorage'a kaydedildi");
 
       // Auth state event yayınla
       const authEvent = new CustomEvent('authStateChanged', {
         detail: { isAuthenticated: true },
       });
       window.dispatchEvent(authEvent);
-      console.log('Auth state event yayınlandı');
 
       // Profil oluştur
       const auth = getAuth();
@@ -136,9 +132,6 @@ function SignIn() {
             Phone: '',
             AvatarUrl: '',
           };
-
-          console.log('Profil oluşturma verisi:', profileData);
-          console.log('JSON olarak:', JSON.stringify(profileData, null, 2));
 
           // Backend'e profil oluşturma isteği gönder
           const response = await fetch('http://localhost:5212/api/profile', {
@@ -161,19 +154,10 @@ function SignIn() {
               errorMessage = await response.text();
             }
 
-            console.error(`Profil oluşturulurken hata: ${response.status}`, errorMessage);
-            console.error('Request Headers:', {
-              Authorization: `Bearer ${token.substring(0, 10)}...`,
-              'Content-Type': 'application/json',
-            });
-            console.error('Request Body:', JSON.stringify(profileData));
             throw new Error(`Profil oluşturulurken hata: ${response.status} - ${errorMessage}`);
           }
 
           const responseData = await response.json();
-          console.log('Oluşturulan profil yanıtı:', responseData);
-          console.log('JSON olarak yanıt:', JSON.stringify(responseData, null, 2));
-          console.log('Profil başarıyla oluşturuldu');
         } catch (profileError) {
           console.error('Profil oluşturma hatası:', profileError);
           // Profil oluşturmada hata olsa bile devam ediyoruz
@@ -183,10 +167,8 @@ function SignIn() {
       // Token kaydedildiğinden emin olmak için kontrol et
       setTimeout(() => {
         if (localStorage.getItem('token')) {
-          console.log("Token başarıyla kaydedildi, dashboard'a yönlendiriliyor...");
           window.location.href = '/dashboard-demo'; // URL'yi doğrudan değiştir
         } else {
-          console.error('Token kaydedilemedi!');
           setSignupError('Kayıt işlemi tamamlanamadı. Lütfen tekrar deneyin.');
           setIsLoading(false);
         }
@@ -239,11 +221,7 @@ function SignIn() {
 
   return (
     <div className="signin-container">
-      <div className="signin-header">
-        <button className="back-to-home" onClick={() => navigate('/')} aria-label="Ana sayfaya dön">
-          <i className="fas fa-arrow-left"></i> Ana Sayfaya Dön
-        </button>
-      </div>
+      <Navbar showAuthButtons={false} showHomeButton={true} />
       <div className="signin-form-container">
         <div className="signin-form-card">
           <h2>Kayıt Ol</h2>

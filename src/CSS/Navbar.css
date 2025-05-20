@@ -9,12 +9,43 @@
   z-index: 100;
 }
 
+/* Special styling for login/signin pages */
+.login-container .navbar,
+.signin-container .navbar {
+  background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+  padding: 1.5rem 7%;
+}
+
+.login-container .navbar .logo,
+.signin-container .navbar .logo {
+  color: white;
+}
+
+.login-container .navbar .home-btn,
+.signin-container .navbar .home-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+}
+
+.login-container .navbar .home-btn:hover,
+.signin-container .navbar .home-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
 .logo {
   font-size: 1.8rem;
   font-weight: 700;
   color: #4361ee;
   cursor: pointer;
   transition: color 0.3s;
+  display: flex;
+  align-items: center;
+}
+
+.cloud-icon {
+  margin-right: 8px;
+  font-size: 1.5rem;
 }
 
 .logo:hover {

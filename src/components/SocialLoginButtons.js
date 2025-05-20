@@ -1,12 +1,14 @@
-import React from 'react';
 import '../CSS/SocialLoginButtons.css';
 
 function SocialLoginButtons({ onSocialLogin, isSignUp = false, isLoading = false }) {
   const buttonText = isSignUp ? 'Kayıt Ol' : 'Giriş Yap';
-  const buttonClass = isSignUp ? 'social-signin-btn' : 'social-login-btn';
+
+  // Use the same CSS class for both login and signup to ensure consistency
+  const containerClass = 'social-signin';
+  const buttonClass = 'social-signin-btn';
 
   return (
-    <div className={`social-${isSignUp ? 'signin' : 'login'}`}>
+    <div className={containerClass}>
       <button
         className={`${buttonClass} google-btn`}
         onClick={() => onSocialLogin('google')}
